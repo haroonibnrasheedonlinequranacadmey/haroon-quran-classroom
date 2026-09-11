@@ -2,19 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Haroon Ibn Rasheed Online Quran Academy - Classroom</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Haroon Ibn Rasheed Online Quran Academy</title>
 <style>
-body{margin:0;font-family:Arial;background:#101828;color:white}
-header{padding:15px;text-align:center;background:#0b1220}
-h1{font-size:22px;margin:5px}
-#videoGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:10px}
+*{box-sizing:border-box}
+body{margin:0;background:#101828;color:white;font-family:Arial}
+header{text-align:center;padding:16px;background:#0b1220}
+h1{font-size:21px;margin:4px}
+.room{text-align:center;padding:10px}
+input,button{padding:11px;border-radius:7px;border:0;margin:4px}
+button{cursor:pointer;font-weight:bold}
+#videos{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:10px}
 video{width:100%;height:220px;background:#000;border-radius:10px}
-.controls{text-align:center;padding:15px}
-button{padding:12px 18px;margin:5px;border:0;border-radius:8px;cursor:pointer;font-weight:bold}
-#chat{margin:10px;padding:15px;background:#182235;border-radius:10px}
-#messages{height:120px;overflow:auto;background:#0b1220;padding:10px;margin-bottom:10px}
-input{padding:12px;width:65%;border-radius:6px;border:0}
+.controls{text-align:center;padding:10px}
+#chat{margin:10px;padding:12px;background:#182235;border-radius:10px}
+#messages{height:130px;overflow:auto;background:#0b1220;padding:8px}
+#message{width:70%}
 </style>
 </head>
 
@@ -22,60 +25,329 @@ input{padding:12px;width:65%;border-radius:6px;border:0}
 
 <header>
 <h1>Haroon Ibn Rasheed Online Quran Academy</h1>
-<p>Online Quran Classroom</p>
+<div>Online Quran Classroom</div>
 </header>
 
-<div id="videoGrid">
-<video id="myVideo" autoplay muted playsinline></video>
+<div class="room">
+Room: <b id="roomName"></b>
 </div>
+
+<div id="videos"></div>
 
 <div class="controls">
 <button onclick="startCamera()">🎥 Camera</button>
-<button onclick="shareScreen()">🖥️ Share Screen</button>
 <button onclick="toggleMic()">🎤 Microphone</button>
+<button onclick="shareScreen()">🖥️ Share Screen</button>
 </div>
 
 <div id="chat">
 <h3>💬 Classroom Chat</h3>
 <div id="messages"></div>
-<input id="message" placeholder="Write message...">
+<input id="message" placeholder="Write message">
 <button onclick="sendMessage()">Send</button>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
 <script>
-let stream;
-let micOn=true;
+const SUPABASE_URL =
+"https://haetymgmvotqfyvqwogq.supabase.co";
+
+const SUPABASE_KEY =
+sb_publishable_RdrOGrd2Ov8vxFJPGCvzFA_m7a_4Wo8
+const supabaseClient =
+supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+
+let room =
+location.hash.substring(1) ||
+"quran-class";
+
+document.getElementById("roomName").textContent=room;
+
+let myId=Math.random().toString(36).substring(2,10);
+let myStream=null;
+let peers={};
+let mic=true;
+
+const channel=supabaseClient.channel(
+"quran-room-"+room
+);
+
+channel.on(
+"broadcast",
+{event:"signal"},
+payload=>{
+const data=payload.payload;
+
+if(data.from===myId)return;
+
+handleSignal(data);
+}
+);
+
+channel.subscribe();
+
+function addVideo(id,stream,muted=false){
+let old=document.getElementById("v-"+id);
+if(old)return;
+
+let video=document.createElement("video");
+video.id="v-"+id;
+video.autoplay=true;
+video.playsInline=true;
+video.muted=muted;
+video.srcObject=stream;
+
+document.getElementById("videos").appendChild(video);
+}
 
 async function startCamera(){
+
 try{
-stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
-document.getElementById("myVideo").srcObject=stream;
-}catch(e){
-alert("Camera/Microphone permission is required.");
+
+myStream=await navigator.mediaDevices.getUserMedia({
+video:true,
+audio:true
+});
+
+addVideo("me",myStream,true);
+
+await channel.send({
+type:"broadcast",
+event:"signal",
+payload:{
+type:"hello",
+from:myId
 }
+});
+
+}catch(e){
+
+alert("Camera/Microphone permission denied.");
+
 }
 
-async function shareScreen(){
-try{
-let screen=await navigator.mediaDevices.getDisplayMedia({video:true});
-document.getElementById("myVideo").srcObject=screen;
-}catch(e){}
 }
 
 function toggleMic(){
-if(!stream)return alert("First turn on Camera.");
-let audio=stream.getAudioTracks()[0];
-micOn=!micOn;
-audio.enabled=micOn;
+
+if(!myStream)return;
+
+let audio=myStream.getAudioTracks()[0];
+
+mic=!mic;
+audio.enabled=mic;
+
+}
+
+async function shareScreen(){
+
+try{
+
+let screen=await navigator.mediaDevices.getDisplayMedia({
+video:true
+});
+
+let videoTrack=screen.getVideoTracks()[0];
+
+if(myStream){
+
+let old=myStream.getVideoTracks()[0];
+
+if(old)myStream.removeTrack(old);
+
+myStream.addTrack(videoTrack);
+
+document.getElementById("v-me").srcObject=myStream;
+
+}
+
+videoTrack.onended=()=>{
+startCamera();
+};
+
+}catch(e){}
+
+}
+
+async function createPeer(id,offer=false){
+
+if(peers[id])return peers[id];
+
+let pc=new RTCPeerConnection({
+iceServers:[
+{urls:"stun:stun.l.google.com:19302"}
+]
+});
+
+peers[id]=pc;
+
+if(myStream){
+
+myStream.getTracks().forEach(track=>{
+pc.addTrack(track,myStream);
+});
+
+}
+
+pc.onicecandidate=e=>{
+
+if(e.candidate){
+
+channel.send({
+type:"broadcast",
+event:"signal",
+payload:{
+type:"candidate",
+from:myId,
+to:id,
+candidate:e.candidate
+}
+});
+
+}
+
+};
+
+pc.ontrack=e=>{
+
+addVideo(id,e.streams[0]);
+
+};
+
+if(offer){
+
+let description=await pc.createOffer();
+
+await pc.setLocalDescription(description);
+
+channel.send({
+type:"broadcast",
+event:"signal",
+payload:{
+type:"offer",
+from:myId,
+to:id,
+description
+}
+});
+
+}
+
+return pc;
+
+}
+
+async function handleSignal(data){
+
+if(data.type==="hello"){
+
+if(myStream){
+
+await createPeer(data.from,true);
+
+}
+
+}
+
+if(data.to && data.to!==myId)return;
+
+if(data.type==="offer"){
+
+let pc=await createPeer(data.from,false);
+
+await pc.setRemoteDescription(
+new RTCSessionDescription(data.description)
+);
+
+let answer=await pc.createAnswer();
+
+await pc.setLocalDescription(answer);
+
+channel.send({
+type:"broadcast",
+event:"signal",
+payload:{
+type:"answer",
+from:myId,
+to:data.from,
+description:answer
+}
+});
+
+}
+
+if(data.type==="answer"){
+
+let pc=peers[data.from];
+
+if(pc){
+
+await pc.setRemoteDescription(
+new RTCSessionDescription(data.description)
+);
+
+}
+
+}
+
+if(data.type==="candidate"){
+
+let pc=peers[data.from];
+
+if(pc){
+
+try{
+await pc.addIceCandidate(data.candidate);
+}catch(e){}
+
+}
+
+}
+
 }
 
 function sendMessage(){
+
 let input=document.getElementById("message");
-if(input.value.trim()=="")return;
-let msg=document.createElement("p");
-msg.textContent=input.value;
-document.getElementById("messages").appendChild(msg);
+
+if(!input.value.trim())return;
+
+channel.send({
+type:"broadcast",
+event:"chat",
+payload:{
+sender:"Participant",
+message:input.value
+}
+});
+
+showMessage("You",input.value);
+
 input.value="";
+
+}
+
+channel.on(
+"broadcast",
+{event:"chat"},
+payload=>{
+
+let d=payload.payload;
+
+showMessage(d.sender,d.message);
+
+}
+);
+
+function showMessage(sender,message){
+
+let p=document.createElement("p");
+
+p.textContent=sender+": "+message;
+
+document.getElementById("messages").appendChild(p);
+
 }
 </script>
 
