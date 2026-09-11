@@ -208,9 +208,7 @@ header span{
   display:none;
 }
 
-/* BRAND BACKGROUND
-   Only appears when camera AND screen are off.
-*/
+/* BRAND BACKGROUND */
 
 .brandBackground{
   position:absolute;
@@ -273,10 +271,7 @@ header span{
   backdrop-filter:blur(5px);
 }
 
-/* SCREEN SHARE LAYOUT
-   Screen-share tile becomes the large main area.
-   Other cameras become small boxes.
-*/
+/* SCREEN SHARE LAYOUT */
 
 #videoGrid.has-screen-share{
   display:block;
@@ -309,9 +304,6 @@ header span{
   left:5px;
 }
 
-/* If there are two cameras while screen share is active,
-   keep them stacked in the corner. */
-
 #videoGrid.has-screen-share .tile:nth-child(3):not(.screen-sharing){
   top:130px;
 }
@@ -341,14 +333,47 @@ header span{
   color:white;
   cursor:pointer;
   font-size:13px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:7px;
+
+  transition:
+    background .18s ease,
+    color .18s ease,
+    transform .12s ease;
 }
 
 .controlBtn:hover{
   background:#205040;
 }
 
+.controlBtn:active{
+  transform:scale(.96);
+}
+
+.controlBtn svg{
+  width:20px;
+  height:20px;
+  flex-shrink:0;
+}
+
 .controlBtn.active{
   background:#0b6b4f;
+}
+
+.controlBtn.screen-active{
+  background:#1976d2;
+}
+
+.controlBtn.off{
+  background:#a72c2c;
+  color:white;
+}
+
+.controlBtn.off:hover{
+  background:#c43737;
 }
 
 .controlBtn.leave{
@@ -516,6 +541,11 @@ header span{
     font-size:11px;
   }
 
+  .controlBtn svg{
+    width:19px;
+    height:19px;
+  }
+
   #chatPanel{
     bottom:73px;
     right:7px;
@@ -580,24 +610,50 @@ header span{
 
   <div id="controls">
 
-    <button class="controlBtn" id="cameraBtn">
-      📷 Camera
+    <button class="controlBtn" id="cameraBtn" aria-label="Camera">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 10l4.5-3A1 1 0 0 1 21 7.8v8.4a1 1 0 0 1-1.5.8L15 14"/>
+        <rect x="3" y="6" width="12" height="12" rx="2"/>
+      </svg>
+      <span>Camera</span>
     </button>
 
-    <button class="controlBtn" id="micBtn">
-      🎤 Mic
+    <button class="controlBtn" id="micBtn" aria-label="Microphone">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="9" y="2" width="6" height="12" rx="3"/>
+        <path d="M5 10a7 7 0 0 0 14 0"/>
+        <path d="M12 19v3"/>
+        <path d="M8 22h8"/>
+      </svg>
+      <span>Mic</span>
     </button>
 
-    <button class="controlBtn" id="screenBtn">
-      🖥 Screen
+    <button class="controlBtn" id="screenBtn" aria-label="Screen Share">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="18" height="14" rx="2"/>
+        <path d="M8 22h8"/>
+        <path d="M12 18v4"/>
+      </svg>
+      <span>Screen</span>
     </button>
 
-    <button class="controlBtn" id="chatBtn">
-      💬 Chat
+    <button class="controlBtn" id="chatBtn" aria-label="Chat">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.2 9.2 0 0 1-4-.9L3 21l1.8-4.5A8.4 8.4 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/>
+        <path d="M8 12h.01"/>
+        <path d="M12 12h.01"/>
+        <path d="M16 12h.01"/>
+      </svg>
+      <span>Chat</span>
     </button>
 
     <button class="controlBtn leave" id="leaveBtn">
-      Leave
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M10 17l5-5-5-5"/>
+        <path d="M15 12H3"/>
+        <path d="M21 19V5a2 2 0 0 0-2-2h-6"/>
+      </svg>
+      <span>Leave</span>
     </button>
 
   </div>
@@ -742,6 +798,121 @@ const toast =
 
 
 /* =========================================================
+   CONTROL ICONS
+========================================================= */
+
+const cameraOnIcon = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M15 10l4.5-3A1 1 0 0 1 21 7.8v8.4a1 1 0 0 1-1.5.8L15 14"/>
+  <rect x="3" y="6" width="12" height="12" rx="2"/>
+</svg>
+<span>Camera</span>
+`;
+
+const cameraOffIcon = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 3l18 18"/>
+  <path d="M15 10l4.5-3A1 1 0 0 1 21 7.8v8.4a1 1 0 0 1-1.5.8L15 14"/>
+  <path d="M9.6 6H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10"/>
+</svg>
+<span>Camera</span>
+`;
+
+const micOnIcon = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="9" y="2" width="6" height="12" rx="3"/>
+  <path d="M5 10a7 7 0 0 0 14 0"/>
+  <path d="M12 19v3"/>
+  <path d="M8 22h8"/>
+</svg>
+<span>Mic</span>
+`;
+
+const micOffIcon = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M3 3l18 18"/>
+  <rect x="9" y="2" width="6" height="12" rx="3"/>
+  <path d="M5 10a7 7 0 0 0 8.8 6.8"/>
+  <path d="M12 19v3"/>
+  <path d="M8 22h8"/>
+</svg>
+<span>Mic</span>
+`;
+
+const screenOnIcon = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="4" width="18" height="14" rx="2"/>
+  <path d="M8 22h8"/>
+  <path d="M12 18v4"/>
+</svg>
+<span>Screen</span>
+`;
+
+const screenOffIcon = `
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <rect x="3" y="4" width="18" height="14" rx="2"/>
+  <path d="M8 22h8"/>
+  <path d="M12 18v4"/>
+</svg>
+<span>Screen</span>
+`;
+
+
+function updateControlButtons(){
+
+  cameraBtn.innerHTML =
+    cameraOn ?
+      cameraOnIcon :
+      cameraOffIcon;
+
+  micBtn.innerHTML =
+    micOn ?
+      micOnIcon :
+      micOffIcon;
+
+  screenBtn.innerHTML =
+    screenOn ?
+      screenOnIcon :
+      screenOffIcon;
+
+
+  cameraBtn.classList.toggle(
+    "active",
+    cameraOn
+  );
+
+  cameraBtn.classList.toggle(
+    "off",
+    !cameraOn
+  );
+
+
+  micBtn.classList.toggle(
+    "active",
+    micOn
+  );
+
+  micBtn.classList.toggle(
+    "off",
+    !micOn
+  );
+
+
+  screenBtn.classList.toggle(
+    "screen-active",
+    screenOn
+  );
+
+}
+
+
+/* =========================================================
    SMALL TOAST
 ========================================================= */
 
@@ -759,7 +930,6 @@ function showToast(text){
 
 /* =========================================================
    JOIN SOUND
-   Short 1–2 second classroom join tone.
 ========================================================= */
 
 function playJoinSound(){
@@ -802,6 +972,7 @@ function playJoinSound(){
       ctx.createOscillator();
 
     osc1.type = "sine";
+
     osc1.frequency.setValueAtTime(
       880,
       now
@@ -1230,7 +1401,26 @@ async function(){
               );
 
 
+              /*
+                Joiner also hears the sound.
+              */
+
               playJoinSound();
+
+
+              /*
+                Tell already connected
+                participants to play the sound.
+              */
+
+              await sendEvent(
+                "participant-joined",
+                {
+                  from:myId,
+                  name:myName
+                }
+              );
+
 
               resolve();
 
@@ -1254,13 +1444,7 @@ async function(){
     );
 
 
-    cameraBtn.classList.add(
-      "active"
-    );
-
-    micBtn.classList.add(
-      "active"
-    );
+    updateControlButtons();
 
 
     showToast(
@@ -1296,6 +1480,29 @@ async function(){
   }
 
 };
+
+
+/* =========================================================
+   JOIN SOUND FOR ALREADY CONNECTED USERS
+========================================================= */
+
+channel.on(
+  "broadcast",
+  {
+    event:"participant-joined"
+  },
+  ({payload})=>{
+
+    if(
+      !payload ||
+      payload.from === myId
+    ) return;
+
+
+    playJoinSound();
+
+  }
+);
 
 
 /* =========================================================
@@ -1723,11 +1930,6 @@ channel.on(
     }
 
 
-    /*
-      Only one side creates the initial offer.
-      This prevents offer collision.
-    */
-
     const initiator =
       myId < peerId;
 
@@ -1738,11 +1940,6 @@ channel.on(
       initiator
     );
 
-
-    /*
-      If we are already sharing screen,
-      give the new participant the screen too.
-    */
 
     if(
       screenOn &&
@@ -1918,10 +2115,7 @@ async function(){
   applyLocalState();
 
 
-  cameraBtn.classList.toggle(
-    "active",
-    cameraOn
-  );
+  updateControlButtons();
 
 
   await sendEvent(
@@ -1966,10 +2160,7 @@ async function(){
   );
 
 
-  micBtn.classList.toggle(
-    "active",
-    micOn
-  );
+  updateControlButtons();
 
 
   await sendEvent(
@@ -2061,10 +2252,6 @@ async function startScreenShare(){
     screenOn = true;
 
 
-    /*
-      Local screen preview.
-    */
-
     const localTile =
       createLocalTile();
 
@@ -2088,22 +2275,11 @@ async function startScreenShare(){
       .catch(()=>{});
 
 
-    screenBtn.classList.add(
-      "active"
-    );
-
-
-    screenBtn.textContent =
-      "⛔ Stop Screen";
+    updateControlButtons();
 
 
     updateScreenLayout();
 
-
-    /*
-      Send screen directly through a
-      separate WebRTC connection.
-    */
 
     for(
       const peerId in peers
@@ -2142,6 +2318,8 @@ async function startScreenShare(){
 
     screenStream = null;
     screenOn = false;
+
+    updateControlButtons();
 
     showToast(
       "Screen sharing cancelled"
@@ -2201,11 +2379,6 @@ async function startScreenPeerFor(
         screenStream
       );
 
-
-    /*
-      Keep screen reasonably smooth
-      and clear.
-    */
 
     try{
 
@@ -2378,11 +2551,6 @@ channel.on(
     const peerId =
       payload.from;
 
-
-    /*
-      If an older screen connection exists,
-      close it first.
-    */
 
     if(
       screenPeers[peerId]
@@ -2696,10 +2864,6 @@ async function stopScreenShare(){
   }
 
 
-  /*
-    Close every separate screen connection.
-  */
-
   for(
     const peerId in screenPeers
   ){
@@ -2724,10 +2888,6 @@ async function stopScreenShare(){
   );
 
 
-  /*
-    Tell everyone to remove screen.
-  */
-
   await sendEvent(
     "screen-stop",
     {
@@ -2735,10 +2895,6 @@ async function stopScreenShare(){
     }
   );
 
-
-  /*
-    Remove local screen.
-  */
 
   const localTile =
     document.getElementById(
@@ -2768,10 +2924,6 @@ async function stopScreenShare(){
 
   }
 
-
-  /*
-    Remove remote screen state.
-  */
 
   document
     .querySelectorAll(
@@ -2807,14 +2959,7 @@ async function stopScreenShare(){
     });
 
 
-  screenBtn.classList.remove(
-    "active"
-  );
-
-
-  screenBtn.textContent =
-    "🖥 Screen";
-
+  updateControlButtons();
 
   updateScreenLayout();
 
@@ -3149,13 +3294,7 @@ async function(){
    PAGE START
 ========================================================= */
 
-cameraBtn.classList.add(
-  "active"
-);
-
-micBtn.classList.add(
-  "active"
-);
+updateControlButtons();
 
 </script>
 
