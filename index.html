@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Haroon Ibn Rasheed Online Quran Academy - Classroom</title>
+<style>
+body{margin:0;font-family:Arial;background:#101828;color:white}
+header{padding:15px;text-align:center;background:#0b1220}
+h1{font-size:22px;margin:5px}
+#videoGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:10px;padding:10px}
+video{width:100%;height:220px;background:#000;border-radius:10px}
+.controls{text-align:center;padding:15px}
+button{padding:12px 18px;margin:5px;border:0;border-radius:8px;cursor:pointer;font-weight:bold}
+#chat{margin:10px;padding:15px;background:#182235;border-radius:10px}
+#messages{height:120px;overflow:auto;background:#0b1220;padding:10px;margin-bottom:10px}
+input{padding:12px;width:65%;border-radius:6px;border:0}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Haroon Ibn Rasheed Online Quran Academy</h1>
+<p>Online Quran Classroom</p>
+</header>
+
+<div id="videoGrid">
+<video id="myVideo" autoplay muted playsinline></video>
+</div>
+
+<div class="controls">
+<button onclick="startCamera()">🎥 Camera</button>
+<button onclick="shareScreen()">🖥️ Share Screen</button>
+<button onclick="toggleMic()">🎤 Microphone</button>
+</div>
+
+<div id="chat">
+<h3>💬 Classroom Chat</h3>
+<div id="messages"></div>
+<input id="message" placeholder="Write message...">
+<button onclick="sendMessage()">Send</button>
+</div>
+
+<script>
+let stream;
+let micOn=true;
+
+async function startCamera(){
+try{
+stream=await navigator.mediaDevices.getUserMedia({video:true,audio:true});
+document.getElementById("myVideo").srcObject=stream;
+}catch(e){
+alert("Camera/Microphone permission is required.");
+}
+}
+
+async function shareScreen(){
+try{
+let screen=await navigator.mediaDevices.getDisplayMedia({video:true});
+document.getElementById("myVideo").srcObject=screen;
+}catch(e){}
+}
+
+function toggleMic(){
+if(!stream)return alert("First turn on Camera.");
+let audio=stream.getAudioTracks()[0];
+micOn=!micOn;
+audio.enabled=micOn;
+}
+
+function sendMessage(){
+let input=document.getElementById("message");
+if(input.value.trim()=="")return;
+let msg=document.createElement("p");
+msg.textContent=input.value;
+document.getElementById("messages").appendChild(msg);
+input.value="";
+}
+</script>
+
+</body>
+</html>
