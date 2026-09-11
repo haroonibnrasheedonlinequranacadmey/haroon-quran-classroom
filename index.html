@@ -9,10 +9,17 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+
 *{
   box-sizing:border-box;
   margin:0;
   padding:0;
+}
+
+html,
+body{
+  width:100%;
+  height:100%;
 }
 
 body{
@@ -56,9 +63,10 @@ body{
    ========================================================= */
 
 .video-area{
+  position:relative;
   height:calc(100vh - 68px);
   padding:18px 18px 100px;
-  overflow:auto;
+  overflow:hidden;
   background:
     radial-gradient(circle at top right,#263a35 0,#151b1f 38%),
     #151b1f;
@@ -66,26 +74,12 @@ body{
 
 .video-grid{
   width:100%;
-  min-height:100%;
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
-  grid-auto-rows:minmax(190px,1fr);
-  gap:12px;
-  align-content:center;
-}
-
-.empty-message{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  color:#aeb7b4;
-  text-align:center;
-  font-size:15px;
+  height:100%;
+  position:relative;
 }
 
 /* =========================================================
-   VIDEO TILE
+   NORMAL VIDEO TILE
    ========================================================= */
 
 .tile{
@@ -93,6 +87,8 @@ body{
   border-radius:13px;
   overflow:hidden;
   position:relative;
+  width:100%;
+  height:100%;
   min-height:190px;
   box-shadow:0 4px 16px rgba(0,0,0,.35);
   border:1px solid rgba(255,255,255,.06);
@@ -114,7 +110,7 @@ body{
   padding:7px 10px;
   border-radius:8px;
   font-size:14px;
-  z-index:2;
+  z-index:10;
   max-width:75%;
   overflow:hidden;
   text-overflow:ellipsis;
@@ -127,7 +123,7 @@ body{
   bottom:10px;
   display:flex;
   gap:5px;
-  z-index:2;
+  z-index:10;
 }
 
 .status-icon{
@@ -139,6 +135,43 @@ body{
   align-items:center;
   justify-content:center;
   font-size:15px;
+}
+
+/* =========================================================
+   SCREEN SHARE LAYOUT
+   ========================================================= */
+
+/*
+   When screen sharing is active:
+   the main tile fills the screen.
+   The actual camera is composited into the video stream
+   as a small box in the bottom-right corner.
+*/
+
+.tile.screen-sharing{
+  width:100%;
+  height:100%;
+  border-radius:13px;
+}
+
+.tile.screen-sharing video{
+  object-fit:contain;
+  background:#050606;
+}
+
+/* =========================================================
+   WAITING / BRAND BACKGROUND
+   ========================================================= */
+
+.empty-message{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  color:#aeb7b4;
+  text-align:center;
+  font-size:15px;
+  z-index:2;
 }
 
 /* =========================================================
@@ -284,7 +317,9 @@ body{
   background:#d93025;
 }
 
-/* TOOLTIP */
+/* =========================================================
+   TOOLTIP
+   ========================================================= */
 
 .control::after{
   content:attr(data-tip);
@@ -442,8 +477,30 @@ body{
   }
 
   .video-grid{
-    grid-template-columns:1fr;
-    grid-auto-rows:220px;
+    width:100%;
+    height:100%;
+  }
+
+  .tile{
+    border-radius:10px;
+  }
+
+  .tile-name{
+    font-size:12px;
+    padding:6px 8px;
+    left:7px;
+    bottom:7px;
+  }
+
+  .tile-status{
+    right:7px;
+    bottom:7px;
+  }
+
+  .status-icon{
+    width:26px;
+    height:26px;
+    font-size:13px;
   }
 
   .controls{
@@ -472,6 +529,7 @@ body{
     width:90%;
   }
 }
+
 </style>
 </head>
 
@@ -487,8 +545,9 @@ body{
   </div>
 </div>
 
+
 <!-- =======================================================
-     VIDEOS
+     VIDEO AREA
      ======================================================= -->
 
 <div class="video-area">
@@ -501,6 +560,7 @@ body{
 
 </div>
 
+
 <!-- =======================================================
      CHAT PANEL
      ======================================================= -->
@@ -508,13 +568,17 @@ body{
 <div id="chatPanel" class="chat-panel">
 
   <div class="chat-head">
-    <span>Classroom Chat</span>
+
+    <span>
+      Classroom Chat
+    </span>
 
     <button
       class="close-chat"
       onclick="toggleChat()">
       ×
     </button>
+
   </div>
 
   <div
@@ -536,6 +600,7 @@ body{
   </div>
 
 </div>
+
 
 <!-- =======================================================
      CONTROLS
@@ -627,6 +692,7 @@ body{
 
 </div>
 
+
 <!-- =======================================================
      JOIN SCREEN
      ======================================================= -->
@@ -667,6 +733,7 @@ body{
 
 </div>
 
+
 <!-- TOAST -->
 
 <div
@@ -686,7 +753,12 @@ const SUPABASE_URL =
 
 /*
 ===========================================================
-sb_publishable_RdrOGrd2Ov8vxFJPGCvzFA_m7a_4Wo8
+API KEY YAHAN PASTE KARNI HAI
+
+sb_publishable_RdrOGrd2Ov8vxFJPGCvzFA_m7a_4Wo8 ko apni Publishable key
+se replace karein.
+
+Aap Ctrl + F se is text ko search kar sakte hain.
 ===========================================================
 */
 
@@ -705,10 +777,25 @@ supabase.createClient(
    ========================================================= */
 
 let localStream = null;
+
 let screenStream = null;
 
+/*
+   outgoingStream وہ stream ہے جو دوسرے participant کو
+   بھیجی جائے گی۔
+*/
+let outgoingStream = null;
+
+let compositorCanvas = null;
+
+let compositorContext = null;
+
+let compositorAnimation = null;
+
 let cameraOn = true;
+
 let micOn = true;
+
 let screenOn = false;
 
 let myName = "";
@@ -720,6 +807,11 @@ const room =
 new URLSearchParams(
   location.search
 ).get("room") || "quran-class";
+
+
+/* =========================================================
+   SUPABASE CHANNEL
+   ========================================================= */
 
 const channel =
 supabaseClient.channel(
@@ -736,11 +828,15 @@ supabaseClient.channel(
   }
 );
 
+
 const peers = {};
+
 const names = {};
+
 const pendingCandidates = {};
 
 let joined = false;
+
 
 const videoGrid =
 document.getElementById("videoGrid");
@@ -758,13 +854,15 @@ function showToast(text){
   const toast =
   document.getElementById("toast");
 
-  toast.textContent = text;
+  toast.textContent =
+  text;
 
   toast.classList.add("show");
 
   setTimeout(()=>{
     toast.classList.remove("show");
   },3000);
+
 }
 
 
@@ -777,10 +875,14 @@ function toggleChat(){
   document
   .getElementById("chatPanel")
   .classList.toggle("open");
+
 }
 
 
-function addMessage(name,text){
+function addMessage(
+  name,
+  text
+){
 
   const box =
   document.getElementById("messages");
@@ -788,37 +890,53 @@ function addMessage(name,text){
   const div =
   document.createElement("div");
 
-  div.className="message";
+  div.className =
+  "message";
 
   const strong =
   document.createElement("strong");
 
-  strong.textContent=name;
+  strong.textContent =
+  name;
 
   const span =
   document.createElement("span");
 
-  span.textContent=text;
+  span.textContent =
+  text;
 
-  div.appendChild(strong);
-  div.appendChild(span);
+  div.appendChild(
+    strong
+  );
 
-  box.appendChild(div);
+  div.appendChild(
+    span
+  );
+
+  box.appendChild(
+    div
+  );
 
   box.scrollTop =
   box.scrollHeight;
+
 }
 
 
 async function sendChat(){
 
   const input =
-  document.getElementById("chatInput");
+  document.getElementById(
+    "chatInput"
+  );
 
   const text =
   input.value.trim();
 
-  if(!text || !joined)
+  if(
+    !text ||
+    !joined
+  )
     return;
 
   addMessage(
@@ -829,13 +947,17 @@ async function sendChat(){
   try{
 
     await channel.send({
+
       type:"broadcast",
+
       event:"chat",
+
       payload:{
         senderId:myId,
         sender:myName,
         message:text
       }
+
     });
 
   }catch(error){
@@ -848,17 +970,22 @@ async function sendChat(){
   }
 
   input.value="";
+
 }
 
 
 document
-.getElementById("chatInput")
+.getElementById(
+  "chatInput"
+)
 .addEventListener(
   "keydown",
   e=>{
+
     if(e.key==="Enter"){
       sendChat();
     }
+
   }
 );
 
@@ -870,7 +997,9 @@ document
 async function joinClass(){
 
   const input =
-  document.getElementById("nameInput");
+  document.getElementById(
+    "nameInput"
+  );
 
   const name =
   input.value.trim();
@@ -882,17 +1011,24 @@ async function joinClass(){
     );
 
     return;
+
   }
 
-  myName=name;
+  myName =
+  name;
+
 
   try{
 
     localStream =
-    await navigator.mediaDevices
+    await navigator
+    .mediaDevices
     .getUserMedia({
+
       video:true,
+
       audio:true
+
     });
 
   }catch(error){
@@ -907,17 +1043,32 @@ async function joinClass(){
     );
 
     return;
+
   }
+
+
+  /*
+     Start video compositor.
+     Initially camera is shown.
+  */
+
+  startVideoCompositor();
+
 
   createLocalTile();
 
+
   document
-  .getElementById("joinScreen")
+  .getElementById(
+    "joinScreen"
+  )
   .style.display="none";
+
 
   try{
 
     await channel.subscribe(
+
       async status=>{
 
         console.log(
@@ -925,23 +1076,34 @@ async function joinClass(){
           status
         );
 
-        if(status==="SUBSCRIBED"){
+
+        if(
+          status==="SUBSCRIBED"
+        ){
 
           joined=true;
 
+
           await channel.track({
+
             userId:myId,
+
             name:myName
+
           });
 
+
           sendHello();
+
 
           showToast(
             "You joined the class"
           );
+
         }
 
       }
+
     );
 
   }catch(error){
@@ -952,6 +1114,778 @@ async function joinClass(){
     );
 
   }
+
+}
+
+
+/* =========================================================
+   VIDEO COMPOSITOR
+   ========================================================= */
+
+/*
+   یہ function ایک canvas video بناتا ہے۔
+
+   Camera only:
+   camera پوری screen پر۔
+
+   Screen + Camera:
+   screen پوری بڑی،
+   camera چھوٹے box میں۔
+
+   Screen only:
+   screen پوری بڑی۔
+
+   Camera off + Screen off:
+   academy branded background۔
+*/
+
+function startVideoCompositor(){
+
+  if(!localStream)
+    return;
+
+
+  compositorCanvas =
+  document.createElement(
+    "canvas"
+  );
+
+
+  compositorCanvas.width =
+  1280;
+
+  compositorCanvas.height =
+  720;
+
+
+  compositorContext =
+  compositorCanvas.getContext(
+    "2d"
+  );
+
+
+  /*
+     Canvas stream
+  */
+
+  outgoingStream =
+  compositorCanvas.captureStream(
+    30
+  );
+
+
+  /*
+     Audio ہمیشہ local microphone
+     سے جائے گا۔
+  */
+
+  const audioTracks =
+  localStream.getAudioTracks();
+
+  audioTracks.forEach(
+    track=>{
+      outgoingStream.addTrack(
+        track
+      );
+    }
+  );
+
+
+  drawCompositeFrame();
+
+}
+
+
+/* =========================================================
+   DRAW COMPOSITE FRAME
+   ========================================================= */
+
+function drawCompositeFrame(){
+
+  if(
+    !compositorCanvas ||
+    !compositorContext
+  )
+    return;
+
+
+  const ctx =
+  compositorContext;
+
+  const width =
+  compositorCanvas.width;
+
+  const height =
+  compositorCanvas.height;
+
+
+  /*
+     Base background
+  */
+
+  ctx.fillStyle =
+  "#101815";
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  /* =======================================================
+     SCREEN SHARE
+     ======================================================= */
+
+  if(
+    screenOn &&
+    screenStream
+  ){
+
+    const screenVideo =
+    getVideoElement(
+      screenStream
+    );
+
+
+    if(
+      screenVideo &&
+      screenVideo.readyState>=2
+    ){
+
+      drawContain(
+        ctx,
+        screenVideo,
+        0,
+        0,
+        width,
+        height
+      );
+
+    }
+
+
+    /*
+       Camera small box
+    */
+
+    if(cameraOn){
+
+      const cameraVideo =
+      getVideoElement(
+        localStream
+      );
+
+
+      if(
+        cameraVideo &&
+        cameraVideo.readyState>=2
+      ){
+
+        drawCameraOverlay(
+          ctx,
+          cameraVideo,
+          width,
+          height
+        );
+
+      }
+
+    }
+
+  }
+
+
+  /* =======================================================
+     CAMERA ONLY
+     ======================================================= */
+
+  else if(cameraOn){
+
+    const cameraVideo =
+    getVideoElement(
+      localStream
+    );
+
+
+    if(
+      cameraVideo &&
+      cameraVideo.readyState>=2
+    ){
+
+      drawCover(
+        ctx,
+        cameraVideo,
+        0,
+        0,
+        width,
+        height
+      );
+
+    }
+    else{
+
+      drawBrandBackground(
+        ctx,
+        width,
+        height
+      );
+
+    }
+
+  }
+
+
+  /* =======================================================
+     CAMERA OFF + SCREEN OFF
+     ======================================================= */
+
+  else{
+
+    drawBrandBackground(
+      ctx,
+      width,
+      height
+    );
+
+  }
+
+
+  compositorAnimation =
+  requestAnimationFrame(
+    drawCompositeFrame
+  );
+
+}
+
+
+/* =========================================================
+   VIDEO ELEMENT CREATOR
+   ========================================================= */
+
+function getVideoElement(
+  stream
+){
+
+  if(!stream)
+    return null;
+
+
+  let video =
+  stream.__compositorVideo;
+
+
+  if(!video){
+
+    video =
+    document.createElement(
+      "video"
+    );
+
+    video.autoplay=true;
+
+    video.muted=true;
+
+    video.playsInline=true;
+
+    video.srcObject =
+    stream;
+
+
+    stream.__compositorVideo =
+    video;
+
+
+    video.play().catch(
+      ()=>{}
+    );
+
+  }
+
+
+  return video;
+
+}
+
+
+/* =========================================================
+   COVER
+   ========================================================= */
+
+function drawCover(
+  ctx,
+  video,
+  x,
+  y,
+  width,
+  height
+){
+
+  const vw =
+  video.videoWidth ||
+  1280;
+
+  const vh =
+  video.videoHeight ||
+  720;
+
+
+  const scale =
+  Math.max(
+    width / vw,
+    height / vh
+  );
+
+
+  const dw =
+  vw * scale;
+
+  const dh =
+  vh * scale;
+
+
+  const dx =
+  x + (width-dw)/2;
+
+  const dy =
+  y + (height-dh)/2;
+
+
+  ctx.drawImage(
+    video,
+    dx,
+    dy,
+    dw,
+    dh
+  );
+
+}
+
+
+/* =========================================================
+   CONTAIN
+   ========================================================= */
+
+function drawContain(
+  ctx,
+  video,
+  x,
+  y,
+  width,
+  height
+){
+
+  const vw =
+  video.videoWidth ||
+  1280;
+
+  const vh =
+  video.videoHeight ||
+  720;
+
+
+  const scale =
+  Math.min(
+    width / vw,
+    height / vh
+  );
+
+
+  const dw =
+  vw * scale;
+
+  const dh =
+  vh * scale;
+
+
+  const dx =
+  x + (width-dw)/2;
+
+  const dy =
+  y + (height-dh)/2;
+
+
+  ctx.drawImage(
+    video,
+    dx,
+    dy,
+    dw,
+    dh
+  );
+
+}
+
+
+/* =========================================================
+   CAMERA OVERLAY
+   ========================================================= */
+
+function drawCameraOverlay(
+  ctx,
+  video,
+  width,
+  height
+){
+
+  /*
+     Desktop اور mobile دونوں پر
+     camera کو تقریباً 22% width رکھا گیا ہے۔
+  */
+
+  const boxWidth =
+  Math.round(
+    width * 0.22
+  );
+
+
+  const boxHeight =
+  Math.round(
+    boxWidth * 0.62
+  );
+
+
+  const margin =
+  Math.round(
+    width * 0.025
+  );
+
+
+  const x =
+  width -
+  boxWidth -
+  margin;
+
+
+  const y =
+  height -
+  boxHeight -
+  margin;
+
+
+  /*
+     Shadow
+  */
+
+  ctx.save();
+
+  ctx.shadowColor =
+  "rgba(0,0,0,.65)";
+
+  ctx.shadowBlur =
+  22;
+
+  ctx.shadowOffsetY =
+  7;
+
+
+  /*
+     Rounded box
+  */
+
+  roundRect(
+    ctx,
+    x,
+    y,
+    boxWidth,
+    boxHeight,
+    18
+  );
+
+
+  ctx.clip();
+
+
+  ctx.fillStyle =
+  "#000";
+
+  ctx.fillRect(
+    x,
+    y,
+    boxWidth,
+    boxHeight
+  );
+
+
+  drawCover(
+    ctx,
+    video,
+    x,
+    y,
+    boxWidth,
+    boxHeight
+  );
+
+
+  ctx.restore();
+
+
+  /*
+     Border
+  */
+
+  ctx.save();
+
+  ctx.strokeStyle =
+  "rgba(255,255,255,.85)";
+
+  ctx.lineWidth =
+  4;
+
+
+  roundRect(
+    ctx,
+    x,
+    y,
+    boxWidth,
+    boxHeight,
+    18
+  );
+
+
+  ctx.stroke();
+
+  ctx.restore();
+
+}
+
+
+/* =========================================================
+   ROUNDED RECT
+   ========================================================= */
+
+function roundRect(
+  ctx,
+  x,
+  y,
+  width,
+  height,
+  radius
+){
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x+radius,
+    y
+  );
+
+  ctx.lineTo(
+    x+width-radius,
+    y
+  );
+
+  ctx.quadraticCurveTo(
+    x+width,
+    y,
+    x+width,
+    y+radius
+  );
+
+  ctx.lineTo(
+    x+width,
+    y+height-radius
+  );
+
+  ctx.quadraticCurveTo(
+    x+width,
+    y+height,
+    x+width-radius,
+    y+height
+  );
+
+  ctx.lineTo(
+    x+radius,
+    y+height
+  );
+
+  ctx.quadraticCurveTo(
+    x,
+    y+height,
+    x,
+    y+height-radius
+  );
+
+  ctx.lineTo(
+    x,
+    y+radius
+  );
+
+  ctx.quadraticCurveTo(
+    x,
+    y,
+    x+radius,
+    y
+  );
+
+  ctx.closePath();
+
+}
+
+
+/* =========================================================
+   BRANDED BACKGROUND
+   ========================================================= */
+
+function drawBrandBackground(
+  ctx,
+  width,
+  height
+){
+
+  /*
+     Dark green professional background
+  */
+
+  const gradient =
+  ctx.createLinearGradient(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  gradient.addColorStop(
+    0,
+    "#0d3025"
+  );
+
+  gradient.addColorStop(
+    .5,
+    "#10251f"
+  );
+
+  gradient.addColorStop(
+    1,
+    "#07110d"
+  );
+
+
+  ctx.fillStyle =
+  gradient;
+
+
+  ctx.fillRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  /*
+     Decorative circles
+  */
+
+  ctx.globalAlpha =
+  .12;
+
+  ctx.fillStyle =
+  "#ffffff";
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    width*.15,
+    height*.20,
+    height*.20,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.beginPath();
+
+  ctx.arc(
+    width*.88,
+    height*.78,
+    height*.25,
+    0,
+    Math.PI*2
+  );
+
+  ctx.fill();
+
+
+  ctx.globalAlpha =
+  1;
+
+
+  /*
+     Main academy name
+  */
+
+  ctx.textAlign =
+  "center";
+
+  ctx.textBaseline =
+  "middle";
+
+
+  ctx.fillStyle =
+  "#ffffff";
+
+
+  ctx.font =
+  "700 52px Arial";
+
+
+  ctx.fillText(
+    "Haroon Ibn Rasheed",
+    width/2,
+    height/2 - 35
+  );
+
+
+  ctx.fillStyle =
+  "#b7d8cb";
+
+
+  ctx.font =
+  "500 30px Arial";
+
+
+  ctx.fillText(
+    "Online Quran Academy",
+    width/2,
+    height/2 + 28
+  );
+
+
+  /*
+     Small separator
+  */
+
+  ctx.fillStyle =
+  "#75b59d";
+
+
+  ctx.fillRect(
+    width/2 - 90,
+    height/2 + 75,
+    180,
+    3
+  );
+
+
+  ctx.fillStyle =
+  "#91b9aa";
+
+
+  ctx.font =
+  "500 18px Arial";
+
+
+  ctx.fillText(
+    "Online Quran Classroom",
+    width/2,
+    height/2 + 108
+  );
+
 }
 
 
@@ -966,55 +1900,107 @@ function createLocalTile(){
     "tile-"+myId
   );
 
-  if(old) old.remove();
+
+  if(old)
+    old.remove();
+
 
   const tile =
-  document.createElement("div");
+  document.createElement(
+    "div"
+  );
 
-  tile.className="tile";
 
-  tile.id=
+  tile.className =
+  "tile";
+
+
+  tile.id =
   "tile-"+myId;
 
+
   const video =
-  document.createElement("video");
+  document.createElement(
+    "video"
+  );
+
 
   video.autoplay=true;
+
   video.playsInline=true;
+
   video.muted=true;
-  video.srcObject=
-  localStream;
+
+
+  /*
+     Local video ہمیشہ compositor
+     دکھائے گا۔
+  */
+
+  if(outgoingStream){
+
+    video.srcObject =
+    outgoingStream;
+
+  }
+
 
   const name =
-  document.createElement("div");
+  document.createElement(
+    "div"
+  );
 
-  name.className=
+
+  name.className =
   "tile-name";
 
-  name.textContent=
+
+  name.textContent =
   myName+" (You)";
 
-  const status =
-  document.createElement("div");
 
-  status.className=
+  const status =
+  document.createElement(
+    "div"
+  );
+
+
+  status.className =
   "tile-status";
 
-  status.id=
+
+  status.id =
   "status-"+myId;
 
-  status.innerHTML=
+
+  status.innerHTML =
     '<div class="status-icon">🎤</div>'+
     '<div class="status-icon">🎥</div>';
 
-  tile.appendChild(video);
-  tile.appendChild(name);
-  tile.appendChild(status);
 
-  videoGrid.appendChild(tile);
+  tile.appendChild(
+    video
+  );
 
-  emptyMessage.style.display=
+
+  tile.appendChild(
+    name
+  );
+
+
+  tile.appendChild(
+    status
+  );
+
+
+  videoGrid.appendChild(
+    tile
+  );
+
+
+  emptyMessage.style.display =
   "none";
+
 }
 
 
@@ -1027,12 +2013,16 @@ async function sendHello(){
   try{
 
     await channel.send({
+
       type:"broadcast",
+
       event:"hello",
+
       payload:{
         senderId:myId,
         sender:myName
       }
+
     });
 
   }catch(error){
@@ -1043,6 +2033,7 @@ async function sendHello(){
     );
 
   }
+
 }
 
 
@@ -1057,59 +2048,76 @@ function createPeer(
 ){
 
   if(peers[peerId]){
+
     return peers[peerId];
+
   }
 
-  names[peerId]=
+
+  names[peerId] =
   peerName;
 
-  pendingCandidates[peerId]=
+
+  pendingCandidates[peerId] =
   pendingCandidates[peerId] || [];
+
 
   const pc =
   new RTCPeerConnection({
 
     iceServers:[
+
       {
         urls:
         "stun:stun.l.google.com:19302"
       },
+
       {
         urls:
         "stun:stun1.l.google.com:19302"
       }
+
     ]
 
   });
 
-  peers[peerId]=pc;
+
+  peers[peerId] =
+  pc;
 
 
-  /* ADD LOCAL TRACKS */
+  /* =======================================================
+     ADD OUTGOING VIDEO + AUDIO
+     ======================================================= */
 
-  if(localStream){
+  if(outgoingStream){
 
-    localStream
+    outgoingStream
     .getTracks()
-    .forEach(track=>{
+    .forEach(
+      track=>{
 
-      pc.addTrack(
-        track,
-        localStream
-      );
+        pc.addTrack(
+          track,
+          outgoingStream
+        );
 
-    });
+      }
+    );
 
   }
 
 
-  /* ICE */
+  /* =======================================================
+     ICE
+     ======================================================= */
 
   pc.onicecandidate =
   event=>{
 
     if(!event.candidate)
       return;
+
 
     channel.send({
 
@@ -1120,8 +2128,7 @@ function createPeer(
       payload:{
         senderId:myId,
         targetId:peerId,
-        candidate:
-        event.candidate
+        candidate:event.candidate
       }
 
     });
@@ -1129,14 +2136,19 @@ function createPeer(
   };
 
 
-  /* REMOTE TRACK */
+  /* =======================================================
+     REMOTE TRACK
+     ======================================================= */
 
   pc.ontrack =
   event=>{
 
-    if(!event.streams ||
-       !event.streams[0])
+    if(
+      !event.streams ||
+      !event.streams[0]
+    )
       return;
+
 
     createRemoteTile(
       peerId,
@@ -1147,7 +2159,9 @@ function createPeer(
   };
 
 
-  /* CONNECTION STATE */
+  /* =======================================================
+     CONNECTION STATE
+     ======================================================= */
 
   pc.onconnectionstatechange =
   ()=>{
@@ -1156,6 +2170,7 @@ function createPeer(
       peerName,
       pc.connectionState
     );
+
 
     if(
       pc.connectionState===
@@ -1169,28 +2184,36 @@ function createPeer(
 
     }
 
+
     if(
       pc.connectionState===
       "failed"
     ){
 
-      removePeer(peerId);
+      removePeer(
+        peerId
+      );
 
     }
+
 
     if(
       pc.connectionState===
       "closed"
     ){
 
-      removePeer(peerId);
+      removePeer(
+        peerId
+      );
 
     }
 
   };
 
 
-  /* OFFER */
+  /* =======================================================
+     OFFER
+     ======================================================= */
 
   if(initiator){
 
@@ -1201,7 +2224,9 @@ function createPeer(
 
   }
 
+
   return pc;
+
 }
 
 
@@ -1219,9 +2244,11 @@ async function makeOffer(
     const offer =
     await pc.createOffer();
 
+
     await pc.setLocalDescription(
       offer
     );
+
 
     await channel.send({
 
@@ -1246,6 +2273,7 @@ async function makeOffer(
     );
 
   }
+
 }
 
 
@@ -1264,23 +2292,36 @@ function createRemoteTile(
     "tile-"+peerId
   );
 
+
   if(!tile){
 
     tile =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
-    tile.className="tile";
 
-    tile.id=
+    tile.className =
+    "tile";
+
+
+    tile.id =
     "tile-"+peerId;
 
+
     const video =
-    document.createElement("video");
+    document.createElement(
+      "video"
+    );
+
 
     video.autoplay=true;
+
     video.playsInline=true;
-    video.srcObject=
+
+    video.srcObject =
     stream;
+
 
     video.onloadedmetadata =
     ()=>{
@@ -1289,43 +2330,73 @@ function createRemoteTile(
       );
     };
 
-    const name =
-    document.createElement("div");
 
-    name.className=
+    const name =
+    document.createElement(
+      "div"
+    );
+
+
+    name.className =
     "tile-name";
 
-    name.textContent=
+
+    name.textContent =
     peerName;
 
-    const status =
-    document.createElement("div");
 
-    status.className=
+    const status =
+    document.createElement(
+      "div"
+    );
+
+
+    status.className =
     "tile-status";
 
-    status.id=
+
+    status.id =
     "status-"+peerId;
 
-    status.innerHTML=
+
+    status.innerHTML =
       '<div class="status-icon">🎤</div>'+
       '<div class="status-icon">🎥</div>';
 
-    tile.appendChild(video);
-    tile.appendChild(name);
-    tile.appendChild(status);
 
-    videoGrid.appendChild(tile);
+    tile.appendChild(
+      video
+    );
 
-  }else{
+
+    tile.appendChild(
+      name
+    );
+
+
+    tile.appendChild(
+      status
+    );
+
+
+    videoGrid.appendChild(
+      tile
+    );
+
+  }
+  else{
 
     const video =
-    tile.querySelector("video");
+    tile.querySelector(
+      "video"
+    );
+
 
     if(video){
 
-      video.srcObject=
+      video.srcObject =
       stream;
+
 
       video.play().catch(
         ()=>{}
@@ -1335,8 +2406,10 @@ function createRemoteTile(
 
   }
 
-  emptyMessage.style.display=
+
+  emptyMessage.style.display =
   "none";
+
 }
 
 
@@ -1344,40 +2417,52 @@ function createRemoteTile(
    REMOVE PEER
    ========================================================= */
 
-function removePeer(peerId){
+function removePeer(
+  peerId
+){
 
   if(peers[peerId]){
 
     try{
+
       peers[peerId].close();
+
     }catch(e){}
+
 
     delete peers[peerId];
 
   }
 
+
   delete names[peerId];
 
   delete pendingCandidates[peerId];
+
 
   const tile =
   document.getElementById(
     "tile-"+peerId
   );
 
+
   if(tile){
+
     tile.remove();
+
   }
+
 
   if(
     videoGrid.children.length===
     0
   ){
 
-    emptyMessage.style.display=
+    emptyMessage.style.display =
     "block";
 
   }
+
 }
 
 
@@ -1386,34 +2471,38 @@ function removePeer(peerId){
    ========================================================= */
 
 channel.on(
+
   "broadcast",
+
   {event:"hello"},
+
   async ({payload})=>{
 
     if(!payload)
       return;
 
+
     const peerId =
     payload.senderId;
+
 
     if(peerId===myId)
       return;
 
-    names[peerId]=
+
+    names[peerId] =
     payload.sender;
+
 
     showToast(
       payload.sender+
       " joined the class"
     );
 
-    /*
-      Deterministic initiator:
-      only one participant makes offer.
-    */
 
     const initiator =
     myId < peerId;
+
 
     createPeer(
       peerId,
@@ -1422,6 +2511,7 @@ channel.on(
     );
 
   }
+
 );
 
 
@@ -1430,20 +2520,26 @@ channel.on(
    ========================================================= */
 
 channel.on(
+
   "broadcast",
+
   {event:"offer"},
+
   async ({payload})=>{
 
     if(!payload)
       return;
+
 
     if(
       payload.targetId!==myId
     )
       return;
 
+
     const peerId =
     payload.senderId;
+
 
     const pc =
     createPeer(
@@ -1452,25 +2548,32 @@ channel.on(
       false
     );
 
+
     try{
 
       await pc.setRemoteDescription(
+
         new RTCSessionDescription(
           payload.offer
         )
+
       );
+
 
       await addPendingCandidates(
         peerId,
         pc
       );
 
+
       const answer =
       await pc.createAnswer();
+
 
       await pc.setLocalDescription(
         answer
       );
+
 
       await channel.send({
 
@@ -1497,6 +2600,7 @@ channel.on(
     }
 
   }
+
 );
 
 
@@ -1505,31 +2609,41 @@ channel.on(
    ========================================================= */
 
 channel.on(
+
   "broadcast",
+
   {event:"answer"},
+
   async ({payload})=>{
 
     if(!payload)
       return;
+
 
     if(
       payload.targetId!==myId
     )
       return;
 
+
     const pc =
     peers[payload.senderId];
+
 
     if(!pc)
       return;
 
+
     try{
 
       await pc.setRemoteDescription(
+
         new RTCSessionDescription(
           payload.answer
         )
+
       );
+
 
       await addPendingCandidates(
         payload.senderId,
@@ -1546,6 +2660,7 @@ channel.on(
     }
 
   }
+
 );
 
 
@@ -1554,34 +2669,47 @@ channel.on(
    ========================================================= */
 
 channel.on(
+
   "broadcast",
+
   {event:"candidate"},
+
   async ({payload})=>{
 
     if(!payload)
       return;
+
 
     if(
       payload.targetId!==myId
     )
       return;
 
+
     const peerId =
     payload.senderId;
 
+
     const pc =
     peers[peerId];
+
 
     if(!pc){
 
       pendingCandidates[peerId] =
       pendingCandidates[peerId] || [];
 
+
       pendingCandidates[peerId]
-      .push(payload.candidate);
+      .push(
+        payload.candidate
+      );
+
 
       return;
+
     }
+
 
     try{
 
@@ -1590,18 +2718,24 @@ channel.on(
       ){
 
         await pc.addIceCandidate(
+
           new RTCIceCandidate(
             payload.candidate
           )
+
         );
 
-      }else{
+      }
+      else{
 
         pendingCandidates[peerId] =
         pendingCandidates[peerId] || [];
 
+
         pendingCandidates[peerId]
-        .push(payload.candidate);
+        .push(
+          payload.candidate
+        );
 
       }
 
@@ -1615,6 +2749,7 @@ channel.on(
     }
 
   }
+
 );
 
 
@@ -1630,9 +2765,13 @@ async function addPendingCandidates(
   const list =
   pendingCandidates[peerId];
 
-  if(!list ||
-     !list.length)
+
+  if(
+    !list ||
+    !list.length
+  )
     return;
+
 
   for(
     const candidate of list
@@ -1641,9 +2780,11 @@ async function addPendingCandidates(
     try{
 
       await pc.addIceCandidate(
+
         new RTCIceCandidate(
           candidate
         )
+
       );
 
     }catch(error){
@@ -1657,7 +2798,9 @@ async function addPendingCandidates(
 
   }
 
-  pendingCandidates[peerId]=[];
+
+  pendingCandidates[peerId] =
+  [];
 
 }
 
@@ -1667,17 +2810,22 @@ async function addPendingCandidates(
    ========================================================= */
 
 channel.on(
+
   "broadcast",
+
   {event:"chat"},
+
   ({payload})=>{
 
     if(!payload)
       return;
 
+
     if(
       payload.senderId===myId
     )
       return;
+
 
     addMessage(
       payload.sender,
@@ -1685,6 +2833,7 @@ channel.on(
     );
 
   }
+
 );
 
 
@@ -1693,55 +2842,79 @@ channel.on(
    ========================================================= */
 
 channel.on(
+
   "presence",
+
   {event:"sync"},
+
   ()=>{
 
     const state =
     channel.presenceState();
 
+
     Object.keys(state)
-    .forEach(key=>{
+    .forEach(
+      key=>{
 
-      const entries =
-      state[key];
+        const entries =
+        state[key];
 
-      if(!entries ||
-         !entries.length)
-        return;
 
-      const info =
-      entries[0];
+        if(
+          !entries ||
+          !entries.length
+        )
+          return;
 
-      if(
-        info.userId &&
-        info.userId!==myId
-      ){
 
-        names[info.userId]=
-        info.name || "Student";
+        const info =
+        entries[0];
 
-        createPeer(
-          info.userId,
-          info.name || "Student",
-          myId < info.userId
-        );
+
+        if(
+          info.userId &&
+          info.userId!==myId
+        ){
+
+          names[info.userId] =
+          info.name ||
+          "Student";
+
+
+          createPeer(
+
+            info.userId,
+
+            info.name ||
+            "Student",
+
+            myId <
+            info.userId
+
+          );
+
+        }
 
       }
-
-    });
+    );
 
   }
+
 );
 
 
 channel.on(
+
   "presence",
+
   {event:"join"},
+
   ({key,newPresences})=>{
 
     if(key===myId)
       return;
+
 
     if(
       !newPresences ||
@@ -1749,25 +2922,34 @@ channel.on(
     )
       return;
 
+
     const info =
     newPresences[0];
 
+
     const peerId =
-    info.userId || key;
+    info.userId ||
+    key;
+
 
     const peerName =
-    info.name || "Student";
+    info.name ||
+    "Student";
+
 
     if(peerId===myId)
       return;
 
-    names[peerId]=
+
+    names[peerId] =
     peerName;
+
 
     showToast(
       peerName+
       " joined the class"
     );
+
 
     createPeer(
       peerId,
@@ -1776,25 +2958,35 @@ channel.on(
     );
 
   }
+
 );
 
 
 channel.on(
+
   "presence",
+
   {event:"leave"},
+
   ({key,leftPresences})=>{
 
     if(key===myId)
       return;
 
+
     const peerId =
     key;
+
 
     const peerName =
     names[peerId] ||
     "Student";
 
-    removePeer(peerId);
+
+    removePeer(
+      peerId
+    );
+
 
     showToast(
       peerName+
@@ -1802,6 +2994,7 @@ channel.on(
     );
 
   }
+
 );
 
 
@@ -1814,34 +3007,44 @@ function toggleCamera(){
   if(!localStream)
     return;
 
+
   const track =
-  localStream.getVideoTracks()[0];
+  localStream
+  .getVideoTracks()[0];
+
 
   if(!track)
     return;
 
-  cameraOn=
+
+  cameraOn =
   !cameraOn;
 
-  track.enabled=
+
+  track.enabled =
   cameraOn;
+
 
   const btn =
   document.getElementById(
     "cameraBtn"
   );
 
+
   btn.classList.toggle(
     "off",
     !cameraOn
   );
 
-  btn.dataset.tip=
+
+  btn.dataset.tip =
     cameraOn
     ? "Camera"
     : "Camera Off";
 
+
   updateLocalStatus();
+
 }
 
 
@@ -1854,34 +3057,44 @@ function toggleMic(){
   if(!localStream)
     return;
 
+
   const track =
-  localStream.getAudioTracks()[0];
+  localStream
+  .getAudioTracks()[0];
+
 
   if(!track)
     return;
 
-  micOn=
+
+  micOn =
   !micOn;
 
-  track.enabled=
+
+  track.enabled =
   micOn;
+
 
   const btn =
   document.getElementById(
     "micBtn"
   );
 
+
   btn.classList.toggle(
     "off",
     !micOn
   );
 
-  btn.dataset.tip=
+
+  btn.dataset.tip =
     micOn
     ? "Microphone"
     : "Microphone Muted";
 
+
   updateLocalStatus();
+
 }
 
 
@@ -1896,16 +3109,19 @@ function updateLocalStatus(){
     "status-"+myId
   );
 
+
   if(!status)
     return;
 
-  status.innerHTML=
+
+  status.innerHTML =
     '<div class="status-icon">'+
     (micOn ? "🎤" : "🔇")+
     '</div>'+
     '<div class="status-icon">'+
     (cameraOn ? "🎥" : "📷")+
     '</div>';
+
 }
 
 
@@ -1918,6 +3134,7 @@ async function toggleScreen(){
   if(!localStream)
     return;
 
+
   if(!screenOn){
 
     try{
@@ -1926,63 +3143,71 @@ async function toggleScreen(){
       await navigator
       .mediaDevices
       .getDisplayMedia({
+
         video:true
+
       });
+
 
       const screenTrack =
       screenStream
       .getVideoTracks()[0];
 
-      for(
-        const peerId in peers
-      ){
 
-        const sender =
-        peers[peerId]
-        .getSenders()
-        .find(
-          s=>
-          s.track &&
-          s.track.kind==="video"
-        );
+      if(!screenTrack)
+        return;
 
-        if(sender){
 
-          await sender.replaceTrack(
-            screenTrack
-          );
+      screenOn =
+      true;
 
-        }
 
-      }
+      /*
+         We don't replace the remote track anymore.
+         The canvas compositor automatically combines
+         screen + camera.
+      */
 
-      const localVideo =
-      document.querySelector(
-        "#tile-"+myId+" video"
+
+      const localTile =
+      document.getElementById(
+        "tile-"+myId
       );
 
-      if(localVideo){
 
-        localVideo.srcObject=
-        screenStream;
+      if(localTile){
+
+        localTile.classList.add(
+          "screen-sharing"
+        );
 
       }
 
-      screenOn=true;
 
       document
-      .getElementById("screenBtn")
-      .classList.add("active");
+      .getElementById(
+        "screenBtn"
+      )
+      .classList.add(
+        "active"
+      );
+
 
       document
-      .getElementById("screenBtn")
-      .dataset.tip=
+      .getElementById(
+        "screenBtn"
+      )
+      .dataset.tip =
       "Stop Screen Share";
 
-      screenTrack.onended=
+
+      screenTrack.onended =
       ()=>{
+
         stopScreen();
+
       };
+
 
       showToast(
         "Screen sharing started"
@@ -1997,11 +3222,13 @@ async function toggleScreen(){
 
     }
 
-  }else{
+  }
+  else{
 
     stopScreen();
 
   }
+
 }
 
 
@@ -2014,69 +3241,64 @@ async function stopScreen(){
   if(!screenOn)
     return;
 
-  const cameraTrack =
-  localStream
-  .getVideoTracks()[0];
 
-  for(
-    const peerId in peers
-  ){
+  screenOn =
+  false;
 
-    const sender =
-    peers[peerId]
-    .getSenders()
-    .find(
-      s=>
-      s.track &&
-      s.track.kind==="video"
-    );
-
-    if(sender){
-
-      await sender.replaceTrack(
-        cameraTrack
-      );
-
-    }
-
-  }
 
   if(screenStream){
 
     screenStream
     .getTracks()
-    .forEach(track=>{
-      track.stop();
-    });
+    .forEach(
+      track=>{
+        track.stop();
+      }
+    );
 
   }
 
-  const localVideo =
-  document.querySelector(
-    "#tile-"+myId+" video"
+
+  screenStream =
+  null;
+
+
+  const localTile =
+  document.getElementById(
+    "tile-"+myId
   );
 
-  if(localVideo){
 
-    localVideo.srcObject=
-    localStream;
+  if(localTile){
+
+    localTile.classList.remove(
+      "screen-sharing"
+    );
 
   }
 
-  screenOn=false;
 
   document
-  .getElementById("screenBtn")
-  .classList.remove("active");
+  .getElementById(
+    "screenBtn"
+  )
+  .classList.remove(
+    "active"
+  );
+
 
   document
-  .getElementById("screenBtn")
-  .dataset.tip=
+  .getElementById(
+    "screenBtn"
+  )
+  .dataset.tip =
   "Screen Share";
+
 
   showToast(
     "Screen sharing stopped"
   );
+
 }
 
 
@@ -2091,8 +3313,10 @@ async function leaveClass(){
     "Are you sure you want to leave the class?"
   );
 
+
   if(!answer)
     return;
+
 
   try{
 
@@ -2103,6 +3327,7 @@ async function leaveClass(){
     console.log(error);
 
   }
+
 
   for(
     const peerId in peers
@@ -2116,30 +3341,72 @@ async function leaveClass(){
 
   }
 
+
   Object.keys(peers)
   .forEach(
     key=>delete peers[key]
   );
+
+
+  if(
+    compositorAnimation
+  ){
+
+    cancelAnimationFrame(
+      compositorAnimation
+    );
+
+    compositorAnimation =
+    null;
+
+  }
+
 
   if(screenStream){
 
     screenStream
     .getTracks()
     .forEach(
-      track=>track.stop()
+      track=>{
+        track.stop();
+      }
     );
 
   }
+
 
   if(localStream){
 
     localStream
     .getTracks()
     .forEach(
-      track=>track.stop()
+      track=>{
+        track.stop();
+      }
     );
 
   }
+
+
+  screenStream =
+  null;
+
+
+  localStream =
+  null;
+
+
+  outgoingStream =
+  null;
+
+
+  compositorCanvas =
+  null;
+
+
+  compositorContext =
+  null;
+
 
   try{
 
@@ -2151,25 +3418,39 @@ async function leaveClass(){
 
   }
 
-  joined=false;
 
-  videoGrid.innerHTML="";
+  joined =
+  false;
 
-  emptyMessage.style.display=
+
+  videoGrid.innerHTML =
+  "";
+
+
+  emptyMessage.style.display =
   "block";
 
-  document
-  .getElementById("joinScreen")
-  .style.display=
-  "flex";
 
   document
-  .getElementById("nameInput")
-  .value="";
+  .getElementById(
+    "joinScreen"
+  )
+  .style.display =
+  "flex";
+
+
+  document
+  .getElementById(
+    "nameInput"
+  )
+  .value =
+  "";
+
 
   showToast(
     "You left the class"
   );
+
 }
 
 
@@ -2178,13 +3459,17 @@ async function leaveClass(){
    ========================================================= */
 
 document
-.getElementById("nameInput")
+.getElementById(
+  "nameInput"
+)
 .addEventListener(
   "keydown",
   e=>{
 
     if(e.key==="Enter"){
+
       joinClass();
+
     }
 
   }
