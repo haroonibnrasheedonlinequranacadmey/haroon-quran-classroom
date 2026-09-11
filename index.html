@@ -582,8 +582,6 @@ header span{
 
 <div id="app">
 
-  <!-- JOIN -->
-
   <div id="joinScreen">
     <div class="joinBox">
       <h2>Join Quran Class</h2>
@@ -600,13 +598,9 @@ header span{
     </div>
   </div>
 
-  <!-- VIDEO -->
-
   <div id="videoArea">
     <div id="videoGrid"></div>
   </div>
-
-  <!-- CONTROLS -->
 
   <div id="controls">
 
@@ -658,8 +652,6 @@ header span{
 
   </div>
 
-  <!-- CHAT -->
-
   <div id="chatPanel">
 
     <div class="chatHeader">
@@ -687,8 +679,6 @@ header span{
 </div>
 
 <div id="toast"></div>
-
-<!-- SUPABASE -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -737,6 +727,13 @@ const screenPeers = {};
 
 const pendingCandidates = {};
 const pendingScreenCandidates = {};
+
+/*
+  CAMERA FIX:
+  Prevent two camera PeerConnections from being
+  created at the same time for the same participant.
+*/
+const creatingPeers = {};
 
 let channel = null;
 
@@ -1167,6 +1164,9 @@ function createLocalTile(){
   cameraVideo.srcObject =
     localStream;
 
+  cameraVideo.play()
+    .catch(()=>{});
+
   return tile;
 }
 
@@ -1219,6 +1219,7 @@ function createRemoteTile(
       class="cameraVideo"
       autoplay
       playsinline
+      muted
     ></video>
 
     <video
@@ -1401,17 +1402,8 @@ async function(){
               );
 
 
-              /*
-                Joiner also hears the sound.
-              */
-
               playJoinSound();
 
-
-              /*
-                Tell already connected
-                participants to play the sound.
-              */
 
               await sendEvent(
                 "participant-joined",
@@ -1507,6 +1499,7 @@ channel.on(
 
 /* =========================================================
    CREATE CAMERA + AUDIO PEER
+   CAMERA FIXED VERSION
 ========================================================= */
 
 async function createPeer(
@@ -1515,6 +1508,9 @@ async function createPeer(
   initiator
 ){
 
+  /*
+    Already created.
+  */
   if(peers[peerId]){
 
     return peers[peerId];
@@ -1522,141 +1518,304 @@ async function createPeer(
   }
 
 
-  const pc =
-    new RTCPeerConnection(
-      {
-        iceServers:ICE_SERVERS
-      }
-    );
+  /*
+    Prevent simultaneous creation of
+    two PeerConnections for the same user.
+  */
+  if(creatingPeers[peerId]){
 
-
-  peers[peerId] = {
-
-    pc:pc,
-
-    name:safeName(peerName)
-
-  };
-
-
-  createRemoteTile(
-    peerId,
-    peerName
-  );
-
-
-  if(localStream){
-
-    localStream
-      .getTracks()
-      .forEach(track=>{
-
-        pc.addTrack(
-          track,
-          localStream
-        );
-
-      });
+    return creatingPeers[peerId];
 
   }
 
 
-  pc.onicecandidate =
-    event=>{
+  creatingPeers[peerId] =
+    (async()=>{
 
-      if(
-        event.candidate
-      ){
+      /*
+        Double-check after waiting.
+      */
+      if(peers[peerId]){
 
-        sendEvent(
-          "candidate",
+        return peers[peerId];
+
+      }
+
+
+      const pc =
+        new RTCPeerConnection(
+          {
+            iceServers:ICE_SERVERS
+          }
+        );
+
+
+      const peerData = {
+
+        pc:pc,
+
+        name:safeName(peerName),
+
+        /*
+          Keep one MediaStream for all
+          incoming camera/audio tracks.
+        */
+        remoteStream:
+          new MediaStream()
+
+      };
+
+
+      peers[peerId] =
+        peerData;
+
+
+      createRemoteTile(
+        peerId,
+        peerName
+      );
+
+
+      /*
+        Add local camera + microphone.
+      */
+      if(localStream){
+
+        localStream
+          .getTracks()
+          .forEach(track=>{
+
+            try{
+
+              pc.addTrack(
+                track,
+                localStream
+              );
+
+            }catch(error){
+
+              console.error(
+                "Add local track error:",
+                error
+              );
+
+            }
+
+          });
+
+      }
+
+
+      pc.onicecandidate =
+        event=>{
+
+          if(
+            event.candidate
+          ){
+
+            sendEvent(
+              "candidate",
+              {
+                from:myId,
+                to:peerId,
+                candidate:event.candidate
+              }
+            );
+
+          }
+
+        };
+
+
+      /*
+        CAMERA FIX:
+        Build a stable MediaStream from
+        every remote track instead of relying
+        only on event.streams[0].
+      */
+      pc.ontrack =
+        event=>{
+
+          try{
+
+            const tile =
+              createRemoteTile(
+                peerId,
+                peerData.name
+              );
+
+
+            const video =
+              tile.querySelector(
+                ".cameraVideo"
+              );
+
+
+            /*
+              Add each incoming track only once.
+            */
+            if(
+              event.track &&
+              !peerData.remoteStream
+                .getTracks()
+                .some(
+                  track=>
+                    track.id ===
+                    event.track.id
+                )
+            ){
+
+              peerData.remoteStream.addTrack(
+                event.track
+              );
+
+            }
+
+
+            /*
+              Always attach our stable
+              MediaStream to the video.
+            */
+            if(
+              video.srcObject !==
+              peerData.remoteStream
+            ){
+
+              video.srcObject =
+                peerData.remoteStream;
+
+            }
+
+
+            /*
+              Make sure remote camera
+              is actually allowed to play.
+            */
+            video.muted = true;
+
+            const playPromise =
+              video.play();
+
+            if(playPromise){
+
+              playPromise.catch(
+                error=>{
+                  console.log(
+                    "Remote camera play waiting:",
+                    error
+                  );
+                }
+              );
+
+            }
+
+
+            /*
+              If track is later enabled/disabled,
+              keep the video element alive.
+            */
+            event.track.onended =
+              ()=>{
+
+                console.log(
+                  "Remote camera track ended:",
+                  peerId,
+                  event.track.kind
+                );
+
+              };
+
+
+          }catch(error){
+
+            console.error(
+              "Remote camera track error:",
+              error
+            );
+
+          }
+
+        };
+
+
+      pc.onconnectionstatechange =
+        ()=>{
+
+          console.log(
+            "Camera connection:",
+            peerId,
+            pc.connectionState
+          );
+
+
+          if(
+            pc.connectionState ===
+            "failed"
+          ){
+
+            console.log(
+              "Camera connection failed:",
+              peerId
+            );
+
+          }
+
+        };
+
+
+      pc.oniceconnectionstatechange =
+        ()=>{
+
+          console.log(
+            "Camera ICE:",
+            peerId,
+            pc.iceConnectionState
+          );
+
+        };
+
+
+      if(initiator){
+
+        const offer =
+          await pc.createOffer();
+
+
+        await pc.setLocalDescription(
+          offer
+        );
+
+
+        await sendEvent(
+          "offer",
           {
             from:myId,
             to:peerId,
-            candidate:event.candidate
+            offer:offer,
+            name:myName,
+            cameraOn:cameraOn,
+            micOn:micOn
           }
         );
 
       }
 
-    };
+
+      return peerData;
+
+    })();
 
 
-  pc.ontrack =
-    event=>{
+  try{
 
-      const tile =
-        createRemoteTile(
-          peerId,
-          peerName
-        );
+    return await creatingPeers[peerId];
 
-      const video =
-        tile.querySelector(
-          ".cameraVideo"
-        );
+  }finally{
 
-
-      if(
-        event.streams &&
-        event.streams[0]
-      ){
-
-        video.srcObject =
-          event.streams[0];
-
-      }
-
-      video.play()
-        .catch(()=>{});
-
-    };
-
-
-  pc.onconnectionstatechange =
-    ()=>{
-
-      if(
-        pc.connectionState ===
-        "failed"
-      ){
-
-        console.log(
-          "Camera connection failed:",
-          peerId
-        );
-
-      }
-
-    };
-
-
-  if(initiator){
-
-    const offer =
-      await pc.createOffer();
-
-    await pc.setLocalDescription(
-      offer
-    );
-
-
-    await sendEvent(
-      "offer",
-      {
-        from:myId,
-        to:peerId,
-        offer:offer,
-        name:myName,
-        cameraOn:cameraOn,
-        micOn:micOn
-      }
-    );
+    delete creatingPeers[peerId];
 
   }
 
-
-  return pc;
 }
 
 
@@ -1681,7 +1840,7 @@ channel.on(
       payload.from;
 
 
-    const pc =
+    const peerData =
       await createPeer(
         peerId,
         payload.name,
@@ -1689,7 +1848,30 @@ channel.on(
       );
 
 
+    const pc =
+      peerData.pc;
+
+
     try{
+
+      /*
+        Ignore duplicate offer if already
+        connected/negotiating.
+      */
+      if(
+        pc.signalingState !==
+        "stable"
+      ){
+
+        console.log(
+          "Ignoring duplicate camera offer:",
+          peerId
+        );
+
+        return;
+
+      }
+
 
       await pc.setRemoteDescription(
         payload.offer
@@ -1777,9 +1959,16 @@ channel.on(
 
     try{
 
-      await peer.pc.setRemoteDescription(
-        payload.answer
-      );
+      if(
+        peer.pc.signalingState ===
+        "have-local-offer"
+      ){
+
+        await peer.pc.setRemoteDescription(
+          payload.answer
+        );
+
+      }
 
 
       if(
@@ -2003,6 +2192,12 @@ channel.on(
       if(item.cameraOn === false){
 
         tile.classList.add(
+          "camera-off"
+        );
+
+      }else{
+
+        tile.classList.remove(
           "camera-off"
         );
 
