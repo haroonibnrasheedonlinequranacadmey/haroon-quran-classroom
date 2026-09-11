@@ -3,764 +3,647 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="icon" href="data:,">
 
 <title>Haroon Ibn Rasheed | Online Quran Academy</title>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <style>
-
 *{
   box-sizing:border-box;
+}
+
+html,body{
   margin:0;
   padding:0;
-}
-
-html,
-body{
   width:100%;
   height:100%;
+  overflow:hidden;
+  font-family:Arial,sans-serif;
+  background:#071b15;
+  color:white;
 }
 
 body{
-  font-family:Arial,Helvetica,sans-serif;
-  background:#151b1f;
-  color:white;
-  min-height:100vh;
-  overflow:hidden;
+  display:flex;
+  flex-direction:column;
 }
 
-/* =========================================================
-   TOP BAR
-   ========================================================= */
+/* HEADER */
 
-.topbar{
-  height:68px;
-  background:linear-gradient(135deg,#ffffff,#f4f7f5);
-  color:#146b52;
+header{
+  height:58px;
+  background:#0b6b4f;
   display:flex;
   align-items:center;
   justify-content:center;
+  padding:0 12px;
+  flex-shrink:0;
+  box-shadow:0 2px 10px rgba(0,0,0,.25);
+  z-index:50;
+}
+
+header h1{
+  margin:0;
+  font-size:19px;
+  font-weight:600;
   text-align:center;
-  font-size:20px;
-  font-weight:700;
-  letter-spacing:.2px;
-  box-shadow:0 2px 10px rgba(0,0,0,.28);
-  position:relative;
-  z-index:20;
 }
 
-.topbar small{
-  display:block;
-  font-size:11px;
-  color:#777;
-  margin-top:3px;
-  font-weight:500;
+header span{
+  font-weight:400;
 }
 
-/* =========================================================
-   VIDEO AREA
-   ========================================================= */
+/* MAIN */
 
-.video-area{
+#app{
+  flex:1;
+  min-height:0;
   position:relative;
-  height:calc(100vh - 68px);
-  padding:18px 18px 100px;
-  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+#joinScreen{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   background:
-    radial-gradient(circle at top right,#263a35 0,#151b1f 38%),
-    #151b1f;
+    radial-gradient(circle at top,#124f3c,#06150f 65%);
+  z-index:100;
 }
 
-.video-grid{
+.joinBox{
+  width:min(420px,92%);
+  background:rgba(10,35,27,.95);
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:18px;
+  padding:28px 22px;
+  text-align:center;
+  box-shadow:0 20px 60px rgba(0,0,0,.45);
+}
+
+.joinBox h2{
+  margin:0 0 8px;
+  font-size:25px;
+}
+
+.joinBox p{
+  margin:0 0 20px;
+  color:#b9d4ca;
+}
+
+#nameInput{
+  width:100%;
+  padding:14px;
+  border:0;
+  outline:none;
+  border-radius:10px;
+  margin-bottom:12px;
+  font-size:16px;
+}
+
+#joinBtn{
+  width:100%;
+  border:0;
+  border-radius:10px;
+  padding:14px;
+  background:#0b6b4f;
+  color:white;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#joinBtn:hover{
+  background:#0e805f;
+}
+
+/* VIDEO AREA */
+
+#videoArea{
+  flex:1;
+  min-height:0;
+  position:relative;
+  background:#020807;
+  overflow:hidden;
+}
+
+#videoGrid{
   width:100%;
   height:100%;
+  padding:10px;
+  display:grid;
+  gap:10px;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  grid-auto-rows:minmax(220px,1fr);
   position:relative;
 }
 
-/* =========================================================
-   NORMAL VIDEO TILE
-   ========================================================= */
+/* NORMAL TILE */
 
 .tile{
-  background:#252b2e;
-  border-radius:13px;
-  overflow:hidden;
   position:relative;
-  width:100%;
-  height:100%;
-  min-height:190px;
-  box-shadow:0 4px 16px rgba(0,0,0,.35);
-  border:1px solid rgba(255,255,255,.06);
-}
-
-.tile video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-  background:#0b0d0e;
-}
-
-.tile-name{
-  position:absolute;
-  left:10px;
-  bottom:10px;
-  background:rgba(0,0,0,.70);
-  padding:7px 10px;
-  border-radius:8px;
-  font-size:14px;
-  z-index:10;
-  max-width:75%;
+  min-width:0;
+  min-height:0;
   overflow:hidden;
-  text-overflow:ellipsis;
-  white-space:nowrap;
+  border-radius:14px;
+  background:#101815;
+  border:1px solid rgba(255,255,255,.10);
+  box-shadow:0 5px 25px rgba(0,0,0,.30);
 }
 
-.tile-status{
-  position:absolute;
-  right:10px;
-  bottom:10px;
-  display:flex;
-  gap:5px;
-  z-index:10;
+.cameraVideo,
+.screenVideo{
+  width:100%;
+  height:100%;
+  display:block;
+  background:#020202;
 }
 
-.status-icon{
-  background:rgba(0,0,0,.70);
-  border-radius:50%;
-  width:30px;
-  height:30px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:15px;
+.cameraVideo{
+  object-fit:cover;
 }
 
-/* =========================================================
-   SCREEN SHARE LAYOUT
-   ========================================================= */
+.screenVideo{
+  display:none;
+  object-fit:contain;
+}
 
-/*
-   When screen sharing is active:
-   the main tile fills the screen.
-   The actual camera is composited into the video stream
-   as a small box in the bottom-right corner.
-*/
+/* SCREEN SHARE MAIN */
 
 .tile.screen-sharing{
-  width:100%;
-  height:100%;
-  border-radius:13px;
+  z-index:10;
 }
 
-.tile.screen-sharing video{
-  object-fit:contain;
-  background:#050606;
-}
-
-/* =========================================================
-   WAITING / BRAND BACKGROUND
-   ========================================================= */
-
-.empty-message{
+.tile.screen-sharing .screenVideo{
+  display:block;
   position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%,-50%);
-  color:#aeb7b4;
+  inset:0;
+  z-index:1;
+}
+
+.tile.screen-sharing .cameraVideo{
+  position:absolute;
+  z-index:5;
+
+  width:clamp(115px,22%,250px);
+  height:auto;
+  aspect-ratio:16/9;
+
+  right:16px;
+  bottom:16px;
+
+  border-radius:12px;
+  border:2px solid rgba(255,255,255,.75);
+  box-shadow:0 5px 25px rgba(0,0,0,.55);
+
+  object-fit:cover;
+}
+
+/* CAMERA OFF */
+
+.tile.camera-off .cameraVideo{
+  display:none;
+}
+
+/* BRAND BACKGROUND
+   Only appears when camera AND screen are off.
+*/
+
+.brandBackground{
+  position:absolute;
+  inset:0;
+  display:none;
+  align-items:center;
+  justify-content:center;
   text-align:center;
-  font-size:15px;
+  background:
+    radial-gradient(circle at 30% 20%,rgba(25,125,91,.40),transparent 35%),
+    radial-gradient(circle at 75% 80%,rgba(15,86,65,.35),transparent 40%),
+    linear-gradient(135deg,#061b14,#0b392b 55%,#04110d);
   z-index:2;
 }
 
-/* =========================================================
-   JOIN SCREEN
-   ========================================================= */
-
-.join-screen{
-  position:fixed;
-  inset:0;
-  background:rgba(8,15,13,.97);
-  z-index:100;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+.brandInner{
   padding:20px;
 }
 
-.join-box{
-  width:min(430px,100%);
-  background:white;
-  color:#222;
-  border-radius:20px;
-  padding:32px;
-  box-shadow:0 18px 60px rgba(0,0,0,.55);
-  text-align:center;
+.brandInner .quran{
+  font-size:36px;
+  margin-bottom:8px;
 }
 
-.join-logo{
-  width:64px;
-  height:64px;
-  border-radius:50%;
-  margin:0 auto 15px;
-  background:#146b52;
-  color:white;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:27px;
-  font-weight:bold;
+.brandInner h3{
+  margin:0;
+  font-size:20px;
 }
 
-.join-box h2{
-  color:#146b52;
-  margin-bottom:6px;
-  font-size:22px;
-}
-
-.join-box .academy-sub{
-  color:#777;
+.brandInner p{
+  margin:7px 0 0;
+  color:#b7d7cb;
   font-size:13px;
-  margin-bottom:22px;
 }
 
-.join-box input{
-  width:100%;
-  padding:14px;
-  border:1px solid #ccc;
-  border-radius:10px;
-  font-size:15px;
-  margin-bottom:12px;
-  outline:none;
-}
-
-.join-box input:focus{
-  border-color:#146b52;
-  box-shadow:0 0 0 3px rgba(20,107,82,.10);
-}
-
-.join-btn{
-  width:100%;
-  border:0;
-  background:#146b52;
-  color:white;
-  padding:14px;
-  border-radius:10px;
-  font-size:15px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.join-btn:hover{
-  background:#0e5943;
-}
-
-/* =========================================================
-   BOTTOM CONTROLS
-   ========================================================= */
-
-.controls{
-  position:fixed;
-  left:50%;
-  bottom:18px;
-  transform:translateX(-50%);
-  background:rgba(29,34,36,.97);
-  padding:9px 14px;
-  border-radius:45px;
+.tile.camera-off:not(.screen-sharing) .brandBackground{
   display:flex;
-  align-items:center;
-  gap:10px;
-  z-index:50;
-  box-shadow:0 6px 28px rgba(0,0,0,.5);
 }
 
-.control{
-  width:48px;
-  height:48px;
-  border:0;
-  border-radius:50%;
-  background:#3b4245;
+/* NAME LABEL */
+
+.nameLabel{
+  position:absolute;
+  left:10px;
+  bottom:10px;
+  z-index:20;
+
+  background:rgba(0,0,0,.62);
   color:white;
+
+  padding:6px 10px;
+  border-radius:8px;
+
+  font-size:13px;
+  max-width:75%;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+
+  backdrop-filter:blur(5px);
+}
+
+/* SCREEN SHARE LAYOUT
+   Screen-share tile becomes the large main area.
+   Other cameras become small boxes.
+*/
+
+#videoGrid.has-screen-share{
+  display:block;
+  padding:0;
+}
+
+#videoGrid.has-screen-share .tile.screen-sharing{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  border-radius:0;
+  border:0;
+}
+
+#videoGrid.has-screen-share .tile:not(.screen-sharing){
+  position:absolute;
+  width:170px;
+  height:105px;
+  right:16px;
+  top:16px;
+  z-index:30;
+  border-radius:11px;
+}
+
+#videoGrid.has-screen-share .tile:not(.screen-sharing) .nameLabel{
+  font-size:11px;
+  padding:4px 7px;
+  bottom:5px;
+  left:5px;
+}
+
+/* If there are two cameras while screen share is active,
+   keep them stacked in the corner. */
+
+#videoGrid.has-screen-share .tile:nth-child(3):not(.screen-sharing){
+  top:130px;
+}
+
+/* CONTROLS */
+
+#controls{
+  height:70px;
+  flex-shrink:0;
+  background:#071510;
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:pointer;
-  position:relative;
-  transition:.15s;
+  gap:10px;
+  padding:8px;
+  border-top:1px solid rgba(255,255,255,.08);
+  z-index:50;
 }
 
-.control:hover{
-  background:#555d60;
-  transform:scale(1.05);
-}
-
-.control svg{
-  width:22px;
-  height:22px;
-  fill:none;
-  stroke:currentColor;
-  stroke-width:2;
-  stroke-linecap:round;
-  stroke-linejoin:round;
-}
-
-.control.off{
-  background:#d93025;
-}
-
-.control.active{
-  background:#146b52;
-}
-
-.control.leave{
-  background:#d93025;
-}
-
-/* =========================================================
-   TOOLTIP
-   ========================================================= */
-
-.control::after{
-  content:attr(data-tip);
-  position:absolute;
-  bottom:59px;
-  left:50%;
-  transform:translateX(-50%);
-  background:#111;
-  color:#fff;
-  padding:6px 9px;
-  border-radius:6px;
-  font-size:12px;
-  white-space:nowrap;
-  opacity:0;
-  pointer-events:none;
-  transition:.15s;
-}
-
-.control:hover::after{
-  opacity:1;
-}
-
-/* =========================================================
-   CHAT
-   ========================================================= */
-
-.chat-panel{
-  position:fixed;
-  left:14px;
-  top:82px;
-  bottom:90px;
-  width:320px;
-  background:white;
-  color:#222;
-  border-radius:14px;
-  box-shadow:0 5px 25px rgba(0,0,0,.45);
-  z-index:40;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  transform:translateX(-350px);
-  transition:.25s ease;
-}
-
-.chat-panel.open{
-  transform:translateX(0);
-}
-
-.chat-head{
-  height:55px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:0 15px;
-  border-bottom:1px solid #ddd;
-  font-weight:bold;
-  color:#146b52;
-}
-
-.close-chat{
+.controlBtn{
+  min-width:52px;
+  height:48px;
+  padding:0 13px;
   border:0;
-  background:none;
-  font-size:22px;
+  border-radius:12px;
+  background:#17342a;
+  color:white;
   cursor:pointer;
-  color:#555;
+  font-size:13px;
 }
 
-.messages{
+.controlBtn:hover{
+  background:#205040;
+}
+
+.controlBtn.active{
+  background:#0b6b4f;
+}
+
+.controlBtn.leave{
+  background:#a72c2c;
+}
+
+.controlBtn.leave:hover{
+  background:#c43737;
+}
+
+/* CHAT */
+
+#chatPanel{
+  position:absolute;
+  right:12px;
+  bottom:82px;
+
+  width:min(340px,calc(100% - 24px));
+  height:430px;
+
+  background:#0b1914;
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:14px;
+
+  display:none;
+  flex-direction:column;
+
+  z-index:100;
+  box-shadow:0 15px 50px rgba(0,0,0,.5);
+}
+
+.chatHeader{
+  padding:13px;
+  font-weight:bold;
+  border-bottom:1px solid rgba(255,255,255,.08);
+}
+
+#messages{
   flex:1;
-  overflow:auto;
-  padding:12px;
+  overflow-y:auto;
+  padding:10px;
 }
 
 .message{
-  background:#f1f3f4;
-  border-radius:10px;
-  padding:8px 10px;
   margin-bottom:8px;
-  font-size:14px;
-  word-break:break-word;
+  padding:8px 10px;
+  border-radius:9px;
+  background:#17342a;
+  text-align:left;
+  font-size:13px;
 }
 
-.message strong{
+.message b{
   display:block;
   margin-bottom:3px;
-  color:#146b52;
+  color:#7ee1bd;
 }
 
-.chat-input{
+.chatInputRow{
   display:flex;
-  padding:10px;
-  border-top:1px solid #ddd;
   gap:7px;
+  padding:9px;
+  border-top:1px solid rgba(255,255,255,.08);
 }
 
-.chat-input input{
+#chatInput{
   flex:1;
-  border:1px solid #ccc;
-  border-radius:20px;
-  padding:10px 13px;
-  outline:none;
-}
-
-.chat-input button{
-  width:40px;
-  height:40px;
+  min-width:0;
   border:0;
-  border-radius:50%;
-  background:#146b52;
-  color:white;
-  cursor:pointer;
+  outline:none;
+  border-radius:8px;
+  padding:10px;
 }
 
-/* =========================================================
-   TOAST
-   ========================================================= */
+#sendChat{
+  border:0;
+  border-radius:8px;
+  background:#0b6b4f;
+  color:white;
+  padding:0 13px;
+}
 
-.toast{
+/* TOAST */
+
+#toast{
   position:fixed;
-  top:82px;
   left:50%;
-  transform:translateX(-50%) translateY(-20px);
-  background:white;
-  color:#222;
-  padding:10px 18px;
-  border-radius:25px;
-  box-shadow:0 5px 20px rgba(0,0,0,.35);
+  bottom:82px;
+  transform:translateX(-50%) translateY(20px);
+
+  background:rgba(0,0,0,.78);
+  color:white;
+
+  padding:10px 16px;
+  border-radius:9px;
+
   opacity:0;
   pointer-events:none;
   transition:.25s;
-  z-index:80;
-  font-size:14px;
+
+  z-index:300;
+  font-size:13px;
 }
 
-.toast.show{
+#toast.show{
   opacity:1;
   transform:translateX(-50%) translateY(0);
 }
 
-/* =========================================================
-   MOBILE
-   ========================================================= */
+/* MOBILE */
 
-@media(max-width:650px){
+@media(max-width:600px){
 
-  .topbar{
-    height:58px;
-    font-size:16px;
-    padding:0 10px;
+  header{
+    height:52px;
   }
 
-  .video-area{
-    height:calc(100vh - 58px);
-    padding:10px 10px 90px;
+  header h1{
+    font-size:15px;
   }
 
-  .video-grid{
-    width:100%;
-    height:100%;
+  #videoGrid{
+    padding:6px;
+    gap:6px;
+    grid-template-columns:1fr;
+    grid-auto-rows:1fr;
   }
 
-  .tile{
-    border-radius:10px;
+  #videoGrid.has-screen-share .tile:not(.screen-sharing){
+    width:125px;
+    height:78px;
+    right:9px;
+    top:9px;
   }
 
-  .tile-name{
-    font-size:12px;
-    padding:6px 8px;
+  #videoGrid.has-screen-share .tile:nth-child(3):not(.screen-sharing){
+    top:94px;
+  }
+
+  .tile.screen-sharing .cameraVideo{
+    width:clamp(100px,24vw,145px);
+    right:9px;
+    bottom:9px;
+    border-radius:9px;
+  }
+
+  .nameLabel{
+    font-size:11px;
+    padding:5px 7px;
     left:7px;
     bottom:7px;
   }
 
-  .tile-status{
+  #controls{
+    height:66px;
+    gap:5px;
+    padding:6px 4px;
+  }
+
+  .controlBtn{
+    min-width:0;
+    flex:1;
+    padding:0 5px;
+    height:46px;
+    font-size:11px;
+  }
+
+  #chatPanel{
+    bottom:73px;
     right:7px;
-    bottom:7px;
-  }
-
-  .status-icon{
-    width:26px;
-    height:26px;
-    font-size:13px;
-  }
-
-  .controls{
-    bottom:10px;
-    padding:7px 9px;
-    gap:6px;
-  }
-
-  .control{
-    width:43px;
-    height:43px;
-  }
-
-  .control svg{
-    width:20px;
-    height:20px;
-  }
-
-  .chat-panel{
-    width:calc(100% - 28px);
-    top:70px;
-    bottom:78px;
-  }
-
-  .empty-message{
-    width:90%;
+    width:calc(100% - 14px);
+    height:55vh;
   }
 }
 
+/* VERY SMALL MOBILE */
+
+@media(max-width:360px){
+
+  .controlBtn{
+    font-size:10px;
+  }
+
+  #videoGrid.has-screen-share .tile:not(.screen-sharing){
+    width:112px;
+    height:70px;
+  }
+
+  #videoGrid.has-screen-share .tile:nth-child(3):not(.screen-sharing){
+    top:80px;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<!-- =======================================================
-     TOP
-     ======================================================= -->
+<header>
+  <h1>Haroon Ibn Rasheed <span>| Online Quran Academy</span></h1>
+</header>
 
-<div class="topbar">
-  <div>
-    Haroon Ibn Rasheed | Online Quran Academy
+<div id="app">
+
+  <!-- JOIN -->
+
+  <div id="joinScreen">
+    <div class="joinBox">
+      <h2>Join Quran Class</h2>
+      <p>Haroon Ibn Rasheed Online Quran Academy</p>
+
+      <input
+        id="nameInput"
+        type="text"
+        placeholder="Enter your name"
+        autocomplete="name"
+      >
+
+      <button id="joinBtn">Join Class</button>
+    </div>
   </div>
-</div>
 
+  <!-- VIDEO -->
 
-<!-- =======================================================
-     VIDEO AREA
-     ======================================================= -->
-
-<div class="video-area">
-
-  <div id="videoGrid" class="video-grid"></div>
-
-  <div id="emptyMessage" class="empty-message">
-    Waiting for students to join...
+  <div id="videoArea">
+    <div id="videoGrid"></div>
   </div>
 
-</div>
+  <!-- CONTROLS -->
 
+  <div id="controls">
 
-<!-- =======================================================
-     CHAT PANEL
-     ======================================================= -->
+    <button class="controlBtn" id="cameraBtn">
+      📷 Camera
+    </button>
 
-<div id="chatPanel" class="chat-panel">
+    <button class="controlBtn" id="micBtn">
+      🎤 Mic
+    </button>
 
-  <div class="chat-head">
+    <button class="controlBtn" id="screenBtn">
+      🖥 Screen
+    </button>
 
-    <span>
-      Classroom Chat
-    </span>
+    <button class="controlBtn" id="chatBtn">
+      💬 Chat
+    </button>
 
-    <button
-      class="close-chat"
-      onclick="toggleChat()">
-      ×
+    <button class="controlBtn leave" id="leaveBtn">
+      Leave
     </button>
 
   </div>
-
-  <div
-    id="messages"
-    class="messages">
-  </div>
-
-  <div class="chat-input">
-
-    <input
-      id="chatInput"
-      type="text"
-      placeholder="Type a message...">
-
-    <button onclick="sendChat()">
-      ➤
-    </button>
-
-  </div>
-
-</div>
-
-
-<!-- =======================================================
-     CONTROLS
-     ======================================================= -->
-
-<div class="controls">
-
-  <!-- CAMERA -->
-
-  <button
-    id="cameraBtn"
-    class="control"
-    data-tip="Camera"
-    onclick="toggleCamera()">
-
-    <svg viewBox="0 0 24 24">
-      <path d="M15 10l4.5-3v10L15 14z"></path>
-      <rect x="3" y="6" width="12" height="12" rx="2"></rect>
-    </svg>
-
-  </button>
-
-
-  <!-- MICROPHONE -->
-
-  <button
-    id="micBtn"
-    class="control"
-    data-tip="Microphone"
-    onclick="toggleMic()">
-
-    <svg viewBox="0 0 24 24">
-      <rect x="8" y="3" width="8" height="12" rx="4"></rect>
-      <path d="M5 11a7 7 0 0 0 14 0"></path>
-      <path d="M12 18v3"></path>
-      <path d="M9 21h6"></path>
-    </svg>
-
-  </button>
-
-
-  <!-- SCREEN SHARE -->
-
-  <button
-    id="screenBtn"
-    class="control"
-    data-tip="Screen Share"
-    onclick="toggleScreen()">
-
-    <svg viewBox="0 0 24 24">
-      <rect x="3" y="4" width="18" height="14" rx="2"></rect>
-      <path d="M8 21h8"></path>
-      <path d="M12 18v3"></path>
-    </svg>
-
-  </button>
-
 
   <!-- CHAT -->
 
-  <button
-    id="chatBtn"
-    class="control"
-    data-tip="Chat"
-    onclick="toggleChat()">
+  <div id="chatPanel">
 
-    <svg viewBox="0 0 24 24">
-      <path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H7l-4 3v-10.5A7.5 7.5 0 0 1 10.5 4H12.5A7.5 7.5 0 0 1 20 11.5z"></path>
-    </svg>
-
-  </button>
-
-
-  <!-- LEAVE -->
-
-  <button
-    id="leaveBtn"
-    class="control leave"
-    data-tip="Leave Class"
-    onclick="leaveClass()">
-
-    <svg viewBox="0 0 24 24">
-      <path d="M10 17l5-5-5-5"></path>
-      <path d="M15 12H3"></path>
-      <path d="M21 4v16"></path>
-    </svg>
-
-  </button>
-
-</div>
-
-
-<!-- =======================================================
-     JOIN SCREEN
-     ======================================================= -->
-
-<div
-  id="joinScreen"
-  class="join-screen">
-
-  <div class="join-box">
-
-    <div class="join-logo">
-      H
+    <div class="chatHeader">
+      Class Chat
     </div>
 
-    <h2>
-      Online Quran Classroom
-    </h2>
+    <div id="messages"></div>
 
-    <div class="academy-sub">
-      Haroon Ibn Rasheed Online Quran Academy
+    <div class="chatInputRow">
+
+      <input
+        id="chatInput"
+        type="text"
+        placeholder="Type message..."
+      >
+
+      <button id="sendChat">
+        Send
+      </button>
+
     </div>
-
-    <input
-      id="nameInput"
-      type="text"
-      placeholder="Your Name"
-      maxlength="40">
-
-    <button
-      class="join-btn"
-      onclick="joinClass()">
-
-      Join Class
-
-    </button>
 
   </div>
 
 </div>
 
+<div id="toast"></div>
 
-<!-- TOAST -->
+<!-- SUPABASE -->
 
-<div
-  id="toast"
-  class="toast">
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 
 /* =========================================================
-   SUPABASE SETTINGS
-   ========================================================= */
+   SUPABASE
+========================================================= */
 
 const SUPABASE_URL =
 "https://haetymgmvotqfyvqwogq.supabase.co";
-
-/*
-===========================================================
-API KEY YAHAN PASTE KARNI HAI
-
-sb_publishable_RdrOGrd2Ov8vxFJPGCvzFA_m7a_4Wo8 ko apni Publishable key
-se replace karein.
-
-Aap Ctrl + F se is text ko search kar sakte hain.
-===========================================================
-*/
 
 const SUPABASE_KEY =
 "sb_publishable_RdrOGrd2Ov8vxFJPGCvzFA_m7a_4Wo8";
@@ -773,344 +656,238 @@ supabase.createClient(
 
 
 /* =========================================================
-   VARIABLES
-   ========================================================= */
+   CLASS VARIABLES
+========================================================= */
 
-let localStream = null;
+const ROOM_ID = "haroon-quran-classroom";
 
-let screenStream = null;
-
-/*
-   outgoingStream وہ stream ہے جو دوسرے participant کو
-   بھیجی جائے گی۔
-*/
-let outgoingStream = null;
-
-let compositorCanvas = null;
-
-let compositorContext = null;
-
-let compositorAnimation = null;
-
-let cameraOn = true;
-
-let micOn = true;
-
-let screenOn = false;
+let myId =
+  Math.random().toString(36).substring(2) +
+  Date.now().toString(36);
 
 let myName = "";
 
-const myId =
-crypto.randomUUID();
+let localStream = null;
+let screenStream = null;
 
-const room =
-new URLSearchParams(
-  location.search
-).get("room") || "quran-class";
-
-
-/* =========================================================
-   SUPABASE CHANNEL
-   ========================================================= */
-
-const channel =
-supabaseClient.channel(
-  "quran-room-" + room,
-  {
-    config:{
-      broadcast:{
-        self:false
-      },
-      presence:{
-        key:myId
-      }
-    }
-  }
-);
-
-
-const peers = {};
-
-const names = {};
-
-const pendingCandidates = {};
+let cameraOn = true;
+let micOn = true;
+let screenOn = false;
 
 let joined = false;
 
+const peers = {};
+const screenPeers = {};
 
-const videoGrid =
-document.getElementById("videoGrid");
+const pendingCandidates = {};
+const pendingScreenCandidates = {};
 
-const emptyMessage =
-document.getElementById("emptyMessage");
+let channel = null;
+
+const ICE_SERVERS = [
+  {
+    urls:"stun:stun.l.google.com:19302"
+  },
+  {
+    urls:"stun:stun1.l.google.com:19302"
+  }
+];
 
 
 /* =========================================================
-   TOAST
-   ========================================================= */
+   ELEMENTS
+========================================================= */
+
+const joinScreen =
+  document.getElementById("joinScreen");
+
+const nameInput =
+  document.getElementById("nameInput");
+
+const joinBtn =
+  document.getElementById("joinBtn");
+
+const videoGrid =
+  document.getElementById("videoGrid");
+
+const cameraBtn =
+  document.getElementById("cameraBtn");
+
+const micBtn =
+  document.getElementById("micBtn");
+
+const screenBtn =
+  document.getElementById("screenBtn");
+
+const chatBtn =
+  document.getElementById("chatBtn");
+
+const leaveBtn =
+  document.getElementById("leaveBtn");
+
+const chatPanel =
+  document.getElementById("chatPanel");
+
+const messages =
+  document.getElementById("messages");
+
+const chatInput =
+  document.getElementById("chatInput");
+
+const sendChat =
+  document.getElementById("sendChat");
+
+const toast =
+  document.getElementById("toast");
+
+
+/* =========================================================
+   SMALL TOAST
+========================================================= */
 
 function showToast(text){
 
-  const toast =
-  document.getElementById("toast");
-
-  toast.textContent =
-  text;
+  toast.textContent = text;
 
   toast.classList.add("show");
 
   setTimeout(()=>{
     toast.classList.remove("show");
-  },3000);
+  },2200);
+}
+
+
+/* =========================================================
+   JOIN SOUND
+   Short 1–2 second classroom join tone.
+========================================================= */
+
+function playJoinSound(){
+
+  try{
+
+    const AudioContext =
+      window.AudioContext ||
+      window.webkitAudioContext;
+
+    if(!AudioContext) return;
+
+    const ctx =
+      new AudioContext();
+
+    const now =
+      ctx.currentTime;
+
+    const gain =
+      ctx.createGain();
+
+    gain.connect(ctx.destination);
+
+    gain.gain.setValueAtTime(
+      0,
+      now
+    );
+
+    gain.gain.linearRampToValueAtTime(
+      0.16,
+      now + 0.03
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      0.001,
+      now + 1.25
+    );
+
+    const osc1 =
+      ctx.createOscillator();
+
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(
+      880,
+      now
+    );
+
+    osc1.connect(gain);
+
+    osc1.start(now);
+    osc1.stop(now + 0.45);
+
+
+    const osc2 =
+      ctx.createOscillator();
+
+    osc2.type = "sine";
+
+    osc2.frequency.setValueAtTime(
+      1175,
+      now + 0.42
+    );
+
+    osc2.connect(gain);
+
+    osc2.start(now + 0.42);
+    osc2.stop(now + 1.2);
+
+    setTimeout(()=>{
+      ctx.close().catch(()=>{});
+    },1600);
+
+  }catch(e){
+
+    console.log(
+      "Join sound unavailable:",
+      e
+    );
+
+  }
 
 }
 
 
 /* =========================================================
-   CHAT
-   ========================================================= */
+   CREATE CHANNEL
+========================================================= */
 
-function toggleChat(){
+channel =
+  supabaseClient.channel(
+    ROOM_ID,
+    {
+      config:{
+        broadcast:{
+          self:false
+        },
+        presence:{
+          key:myId
+        }
+      }
+    }
+  );
 
-  document
-  .getElementById("chatPanel")
-  .classList.toggle("open");
 
-}
+/* =========================================================
+   BROADCAST HELPER
+========================================================= */
 
-
-function addMessage(
-  name,
-  text
+async function sendEvent(
+  event,
+  payload
 ){
 
-  const box =
-  document.getElementById("messages");
-
-  const div =
-  document.createElement("div");
-
-  div.className =
-  "message";
-
-  const strong =
-  document.createElement("strong");
-
-  strong.textContent =
-  name;
-
-  const span =
-  document.createElement("span");
-
-  span.textContent =
-  text;
-
-  div.appendChild(
-    strong
-  );
-
-  div.appendChild(
-    span
-  );
-
-  box.appendChild(
-    div
-  );
-
-  box.scrollTop =
-  box.scrollHeight;
-
-}
-
-
-async function sendChat(){
-
-  const input =
-  document.getElementById(
-    "chatInput"
-  );
-
-  const text =
-  input.value.trim();
-
-  if(
-    !text ||
-    !joined
-  )
-    return;
-
-  addMessage(
-    myName + " (You)",
-    text
-  );
+  if(!channel) return;
 
   try{
 
     await channel.send({
-
       type:"broadcast",
-
-      event:"chat",
-
-      payload:{
-        senderId:myId,
-        sender:myName,
-        message:text
-      }
-
+      event:event,
+      payload:payload
     });
 
-  }catch(error){
+  }catch(e){
 
-    console.error(
-      "Chat error:",
-      error
-    );
-
-  }
-
-  input.value="";
-
-}
-
-
-document
-.getElementById(
-  "chatInput"
-)
-.addEventListener(
-  "keydown",
-  e=>{
-
-    if(e.key==="Enter"){
-      sendChat();
-    }
-
-  }
-);
-
-
-/* =========================================================
-   JOIN
-   ========================================================= */
-
-async function joinClass(){
-
-  const input =
-  document.getElementById(
-    "nameInput"
-  );
-
-  const name =
-  input.value.trim();
-
-  if(!name){
-
-    alert(
-      "Please enter your name."
-    );
-
-    return;
-
-  }
-
-  myName =
-  name;
-
-
-  try{
-
-    localStream =
-    await navigator
-    .mediaDevices
-    .getUserMedia({
-
-      video:true,
-
-      audio:true
-
-    });
-
-  }catch(error){
-
-    console.error(
-      "Camera/Microphone error:",
-      error
-    );
-
-    alert(
-      "Please allow Camera and Microphone permission."
-    );
-
-    return;
-
-  }
-
-
-  /*
-     Start video compositor.
-     Initially camera is shown.
-  */
-
-  startVideoCompositor();
-
-
-  createLocalTile();
-
-
-  document
-  .getElementById(
-    "joinScreen"
-  )
-  .style.display="none";
-
-
-  try{
-
-    await channel.subscribe(
-
-      async status=>{
-
-        console.log(
-          "Supabase:",
-          status
-        );
-
-
-        if(
-          status==="SUBSCRIBED"
-        ){
-
-          joined=true;
-
-
-          await channel.track({
-
-            userId:myId,
-
-            name:myName
-
-          });
-
-
-          sendHello();
-
-
-          showToast(
-            "You joined the class"
-          );
-
-        }
-
-      }
-
-    );
-
-  }catch(error){
-
-    console.error(
-      "Subscribe error:",
-      error
+    console.log(
+      "Broadcast error:",
+      e
     );
 
   }
@@ -1119,917 +896,215 @@ async function joinClass(){
 
 
 /* =========================================================
-   VIDEO COMPOSITOR
-   ========================================================= */
+   NAME / TILE HELPERS
+========================================================= */
 
-/*
-   یہ function ایک canvas video بناتا ہے۔
+function safeName(name){
 
-   Camera only:
-   camera پوری screen پر۔
+  if(!name) return "Participant";
 
-   Screen + Camera:
-   screen پوری بڑی،
-   camera چھوٹے box میں۔
-
-   Screen only:
-   screen پوری بڑی۔
-
-   Camera off + Screen off:
-   academy branded background۔
-*/
-
-function startVideoCompositor(){
-
-  if(!localStream)
-    return;
-
-
-  compositorCanvas =
-  document.createElement(
-    "canvas"
-  );
-
-
-  compositorCanvas.width =
-  1280;
-
-  compositorCanvas.height =
-  720;
-
-
-  compositorContext =
-  compositorCanvas.getContext(
-    "2d"
-  );
-
-
-  /*
-     Canvas stream
-  */
-
-  outgoingStream =
-  compositorCanvas.captureStream(
-    30
-  );
-
-
-  /*
-     Audio ہمیشہ local microphone
-     سے جائے گا۔
-  */
-
-  const audioTracks =
-  localStream.getAudioTracks();
-
-  audioTracks.forEach(
-    track=>{
-      outgoingStream.addTrack(
-        track
-      );
-    }
-  );
-
-
-  drawCompositeFrame();
-
+  return name
+    .toString()
+    .substring(0,40);
 }
 
 
-/* =========================================================
-   DRAW COMPOSITE FRAME
-   ========================================================= */
-
-function drawCompositeFrame(){
-
-  if(
-    !compositorCanvas ||
-    !compositorContext
-  )
-    return;
-
-
-  const ctx =
-  compositorContext;
-
-  const width =
-  compositorCanvas.width;
-
-  const height =
-  compositorCanvas.height;
-
-
-  /*
-     Base background
-  */
-
-  ctx.fillStyle =
-  "#101815";
-
-  ctx.fillRect(
-    0,
-    0,
-    width,
-    height
-  );
-
-
-  /* =======================================================
-     SCREEN SHARE
-     ======================================================= */
-
-  if(
-    screenOn &&
-    screenStream
-  ){
-
-    const screenVideo =
-    getVideoElement(
-      screenStream
-    );
-
-
-    if(
-      screenVideo &&
-      screenVideo.readyState>=2
-    ){
-
-      drawContain(
-        ctx,
-        screenVideo,
-        0,
-        0,
-        width,
-        height
-      );
-
-    }
-
-
-    /*
-       Camera small box
-    */
-
-    if(cameraOn){
-
-      const cameraVideo =
-      getVideoElement(
-        localStream
-      );
-
-
-      if(
-        cameraVideo &&
-        cameraVideo.readyState>=2
-      ){
-
-        drawCameraOverlay(
-          ctx,
-          cameraVideo,
-          width,
-          height
-        );
-
-      }
-
-    }
-
-  }
-
-
-  /* =======================================================
-     CAMERA ONLY
-     ======================================================= */
-
-  else if(cameraOn){
-
-    const cameraVideo =
-    getVideoElement(
-      localStream
-    );
-
-
-    if(
-      cameraVideo &&
-      cameraVideo.readyState>=2
-    ){
-
-      drawCover(
-        ctx,
-        cameraVideo,
-        0,
-        0,
-        width,
-        height
-      );
-
-    }
-    else{
-
-      drawBrandBackground(
-        ctx,
-        width,
-        height
-      );
-
-    }
-
-  }
-
-
-  /* =======================================================
-     CAMERA OFF + SCREEN OFF
-     ======================================================= */
-
-  else{
-
-    drawBrandBackground(
-      ctx,
-      width,
-      height
-    );
-
-  }
-
-
-  compositorAnimation =
-  requestAnimationFrame(
-    drawCompositeFrame
-  );
-
-}
-
-
-/* =========================================================
-   VIDEO ELEMENT CREATOR
-   ========================================================= */
-
-function getVideoElement(
-  stream
-){
-
-  if(!stream)
-    return null;
-
-
-  let video =
-  stream.__compositorVideo;
-
-
-  if(!video){
-
-    video =
-    document.createElement(
-      "video"
-    );
-
-    video.autoplay=true;
-
-    video.muted=true;
-
-    video.playsInline=true;
-
-    video.srcObject =
-    stream;
-
-
-    stream.__compositorVideo =
-    video;
-
-
-    video.play().catch(
-      ()=>{}
-    );
-
-  }
-
-
-  return video;
-
-}
-
-
-/* =========================================================
-   COVER
-   ========================================================= */
-
-function drawCover(
-  ctx,
-  video,
-  x,
-  y,
-  width,
-  height
-){
-
-  const vw =
-  video.videoWidth ||
-  1280;
-
-  const vh =
-  video.videoHeight ||
-  720;
-
-
-  const scale =
-  Math.max(
-    width / vw,
-    height / vh
-  );
-
-
-  const dw =
-  vw * scale;
-
-  const dh =
-  vh * scale;
-
-
-  const dx =
-  x + (width-dw)/2;
-
-  const dy =
-  y + (height-dh)/2;
-
-
-  ctx.drawImage(
-    video,
-    dx,
-    dy,
-    dw,
-    dh
-  );
-
-}
-
-
-/* =========================================================
-   CONTAIN
-   ========================================================= */
-
-function drawContain(
-  ctx,
-  video,
-  x,
-  y,
-  width,
-  height
-){
-
-  const vw =
-  video.videoWidth ||
-  1280;
-
-  const vh =
-  video.videoHeight ||
-  720;
-
-
-  const scale =
-  Math.min(
-    width / vw,
-    height / vh
-  );
-
-
-  const dw =
-  vw * scale;
-
-  const dh =
-  vh * scale;
-
-
-  const dx =
-  x + (width-dw)/2;
-
-  const dy =
-  y + (height-dh)/2;
-
-
-  ctx.drawImage(
-    video,
-    dx,
-    dy,
-    dw,
-    dh
-  );
-
-}
-
-
-/* =========================================================
-   CAMERA OVERLAY
-   ========================================================= */
-
-function drawCameraOverlay(
-  ctx,
-  video,
-  width,
-  height
-){
-
-  /*
-     Desktop اور mobile دونوں پر
-     camera کو تقریباً 22% width رکھا گیا ہے۔
-  */
-
-  const boxWidth =
-  Math.round(
-    width * 0.22
-  );
-
-
-  const boxHeight =
-  Math.round(
-    boxWidth * 0.62
-  );
-
-
-  const margin =
-  Math.round(
-    width * 0.025
-  );
-
-
-  const x =
-  width -
-  boxWidth -
-  margin;
-
-
-  const y =
-  height -
-  boxHeight -
-  margin;
-
-
-  /*
-     Shadow
-  */
-
-  ctx.save();
-
-  ctx.shadowColor =
-  "rgba(0,0,0,.65)";
-
-  ctx.shadowBlur =
-  22;
-
-  ctx.shadowOffsetY =
-  7;
-
-
-  /*
-     Rounded box
-  */
-
-  roundRect(
-    ctx,
-    x,
-    y,
-    boxWidth,
-    boxHeight,
-    18
-  );
-
-
-  ctx.clip();
-
-
-  ctx.fillStyle =
-  "#000";
-
-  ctx.fillRect(
-    x,
-    y,
-    boxWidth,
-    boxHeight
-  );
-
-
-  drawCover(
-    ctx,
-    video,
-    x,
-    y,
-    boxWidth,
-    boxHeight
-  );
-
-
-  ctx.restore();
-
-
-  /*
-     Border
-  */
-
-  ctx.save();
-
-  ctx.strokeStyle =
-  "rgba(255,255,255,.85)";
-
-  ctx.lineWidth =
-  4;
-
-
-  roundRect(
-    ctx,
-    x,
-    y,
-    boxWidth,
-    boxHeight,
-    18
-  );
-
-
-  ctx.stroke();
-
-  ctx.restore();
-
-}
-
-
-/* =========================================================
-   ROUNDED RECT
-   ========================================================= */
-
-function roundRect(
-  ctx,
-  x,
-  y,
-  width,
-  height,
-  radius
-){
-
-  ctx.beginPath();
-
-  ctx.moveTo(
-    x+radius,
-    y
-  );
-
-  ctx.lineTo(
-    x+width-radius,
-    y
-  );
-
-  ctx.quadraticCurveTo(
-    x+width,
-    y,
-    x+width,
-    y+radius
-  );
-
-  ctx.lineTo(
-    x+width,
-    y+height-radius
-  );
-
-  ctx.quadraticCurveTo(
-    x+width,
-    y+height,
-    x+width-radius,
-    y+height
-  );
-
-  ctx.lineTo(
-    x+radius,
-    y+height
-  );
-
-  ctx.quadraticCurveTo(
-    x,
-    y+height,
-    x,
-    y+height-radius
-  );
-
-  ctx.lineTo(
-    x,
-    y+radius
-  );
-
-  ctx.quadraticCurveTo(
-    x,
-    y,
-    x+radius,
-    y
-  );
-
-  ctx.closePath();
-
-}
-
-
-/* =========================================================
-   BRANDED BACKGROUND
-   ========================================================= */
-
-function drawBrandBackground(
-  ctx,
-  width,
-  height
-){
-
-  /*
-     Dark green professional background
-  */
-
-  const gradient =
-  ctx.createLinearGradient(
-    0,
-    0,
-    width,
-    height
-  );
-
-
-  gradient.addColorStop(
-    0,
-    "#0d3025"
-  );
-
-  gradient.addColorStop(
-    .5,
-    "#10251f"
-  );
-
-  gradient.addColorStop(
-    1,
-    "#07110d"
-  );
-
-
-  ctx.fillStyle =
-  gradient;
-
-
-  ctx.fillRect(
-    0,
-    0,
-    width,
-    height
-  );
-
-
-  /*
-     Decorative circles
-  */
-
-  ctx.globalAlpha =
-  .12;
-
-  ctx.fillStyle =
-  "#ffffff";
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    width*.15,
-    height*.20,
-    height*.20,
-    0,
-    Math.PI*2
-  );
-
-  ctx.fill();
-
-
-  ctx.beginPath();
-
-  ctx.arc(
-    width*.88,
-    height*.78,
-    height*.25,
-    0,
-    Math.PI*2
-  );
-
-  ctx.fill();
-
-
-  ctx.globalAlpha =
-  1;
-
-
-  /*
-     Main academy name
-  */
-
-  ctx.textAlign =
-  "center";
-
-  ctx.textBaseline =
-  "middle";
-
-
-  ctx.fillStyle =
-  "#ffffff";
-
-
-  ctx.font =
-  "700 52px Arial";
-
-
-  ctx.fillText(
-    "Haroon Ibn Rasheed",
-    width/2,
-    height/2 - 35
-  );
-
-
-  ctx.fillStyle =
-  "#b7d8cb";
-
-
-  ctx.font =
-  "500 30px Arial";
-
-
-  ctx.fillText(
-    "Online Quran Academy",
-    width/2,
-    height/2 + 28
-  );
-
-
-  /*
-     Small separator
-  */
-
-  ctx.fillStyle =
-  "#75b59d";
-
-
-  ctx.fillRect(
-    width/2 - 90,
-    height/2 + 75,
-    180,
-    3
-  );
-
-
-  ctx.fillStyle =
-  "#91b9aa";
-
-
-  ctx.font =
-  "500 18px Arial";
-
-
-  ctx.fillText(
-    "Online Quran Classroom",
-    width/2,
-    height/2 + 108
-  );
-
+function createBrandBackground(){
+
+  const bg =
+    document.createElement("div");
+
+  bg.className =
+    "brandBackground";
+
+  bg.innerHTML = `
+    <div class="brandInner">
+      <div class="quran">☪</div>
+      <h3>Haroon Ibn Rasheed</h3>
+      <p>Online Quran Academy</p>
+    </div>
+  `;
+
+  return bg;
 }
 
 
 /* =========================================================
    LOCAL TILE
-   ========================================================= */
+========================================================= */
 
 function createLocalTile(){
 
-  const old =
-  document.getElementById(
-    "tile-"+myId
-  );
+  let tile =
+    document.getElementById(
+      "tile-" + myId
+    );
 
+  if(tile) return tile;
 
-  if(old)
-    old.remove();
-
-
-  const tile =
-  document.createElement(
-    "div"
-  );
-
+  tile =
+    document.createElement("div");
 
   tile.className =
-  "tile";
-
+    "tile local-tile";
 
   tile.id =
-  "tile-"+myId;
+    "tile-" + myId;
 
+  tile.innerHTML = `
 
-  const video =
-  document.createElement(
-    "video"
-  );
+    <video
+      class="cameraVideo"
+      autoplay
+      muted
+      playsinline
+    ></video>
 
+    <video
+      class="screenVideo"
+      autoplay
+      muted
+      playsinline
+    ></video>
 
-  video.autoplay=true;
-
-  video.playsInline=true;
-
-  video.muted=true;
-
-
-  /*
-     Local video ہمیشہ compositor
-     دکھائے گا۔
-  */
-
-  if(outgoingStream){
-
-    video.srcObject =
-    outgoingStream;
-
-  }
-
-
-  const name =
-  document.createElement(
-    "div"
-  );
-
-
-  name.className =
-  "tile-name";
-
-
-  name.textContent =
-  myName+" (You)";
-
-
-  const status =
-  document.createElement(
-    "div"
-  );
-
-
-  status.className =
-  "tile-status";
-
-
-  status.id =
-  "status-"+myId;
-
-
-  status.innerHTML =
-    '<div class="status-icon">🎤</div>'+
-    '<div class="status-icon">🎥</div>';
-
+  `;
 
   tile.appendChild(
-    video
+    createBrandBackground()
   );
 
+  const nameLabel =
+    document.createElement("div");
+
+  nameLabel.className =
+    "nameLabel";
+
+  nameLabel.textContent =
+    myName;
 
   tile.appendChild(
-    name
+    nameLabel
   );
 
+  videoGrid.appendChild(tile);
 
-  tile.appendChild(
-    status
-  );
+  const cameraVideo =
+    tile.querySelector(
+      ".cameraVideo"
+    );
 
+  cameraVideo.srcObject =
+    localStream;
 
-  videoGrid.appendChild(
-    tile
-  );
-
-
-  emptyMessage.style.display =
-  "none";
-
+  return tile;
 }
 
 
 /* =========================================================
-   HELLO
-   ========================================================= */
+   REMOTE TILE
+========================================================= */
 
-async function sendHello(){
+function createRemoteTile(
+  peerId,
+  peerName
+){
 
-  try{
+  let tile =
+    document.getElementById(
+      "tile-" + peerId
+    );
 
-    await channel.send({
+  if(tile){
 
-      type:"broadcast",
+    const label =
+      tile.querySelector(
+        ".nameLabel"
+      );
 
-      event:"hello",
+    if(label){
+      label.textContent =
+        safeName(peerName);
+    }
 
-      payload:{
-        senderId:myId,
-        sender:myName
-      }
+    return tile;
+  }
 
-    });
 
-  }catch(error){
+  tile =
+    document.createElement("div");
 
-    console.error(
-      "Hello error:",
-      error
+  tile.className =
+    "tile";
+
+  tile.id =
+    "tile-" + peerId;
+
+  tile.dataset.peerId =
+    peerId;
+
+  tile.innerHTML = `
+
+    <video
+      class="cameraVideo"
+      autoplay
+      playsinline
+    ></video>
+
+    <video
+      class="screenVideo"
+      autoplay
+      muted
+      playsinline
+    ></video>
+
+  `;
+
+  tile.appendChild(
+    createBrandBackground()
+  );
+
+
+  const nameLabel =
+    document.createElement("div");
+
+  nameLabel.className =
+    "nameLabel";
+
+  nameLabel.textContent =
+    safeName(peerName);
+
+  tile.appendChild(
+    nameLabel
+  );
+
+
+  videoGrid.appendChild(tile);
+
+  return tile;
+}
+
+
+/* =========================================================
+   LAYOUT
+========================================================= */
+
+function updateScreenLayout(){
+
+  const sharingTile =
+    document.querySelector(
+      ".tile.screen-sharing"
+    );
+
+  if(sharingTile){
+
+    videoGrid.classList.add(
+      "has-screen-share"
+    );
+
+  }else{
+
+    videoGrid.classList.remove(
+      "has-screen-share"
     );
 
   }
@@ -2038,10 +1113,196 @@ async function sendHello(){
 
 
 /* =========================================================
-   WEBRTC PEER
-   ========================================================= */
+   CAMERA / MIC STATE
+========================================================= */
 
-function createPeer(
+function applyLocalState(){
+
+  const tile =
+    document.getElementById(
+      "tile-" + myId
+    );
+
+  if(!tile) return;
+
+  tile.classList.toggle(
+    "camera-off",
+    !cameraOn
+  );
+}
+
+
+/* =========================================================
+   JOIN
+========================================================= */
+
+joinBtn.onclick =
+async function(){
+
+  const enteredName =
+    nameInput.value.trim();
+
+  if(!enteredName){
+
+    showToast(
+      "Please enter your name"
+    );
+
+    nameInput.focus();
+
+    return;
+  }
+
+
+  myName =
+    safeName(enteredName);
+
+
+  joinBtn.disabled =
+    true;
+
+  joinBtn.textContent =
+    "Joining...";
+
+
+  try{
+
+    localStream =
+      await navigator.mediaDevices.getUserMedia({
+
+        video:{
+          width:{
+            ideal:1280
+          },
+          height:{
+            ideal:720
+          },
+          frameRate:{
+            ideal:30,
+            max:30
+          }
+        },
+
+        audio:true
+
+      });
+
+
+    createLocalTile();
+
+    applyLocalState();
+
+
+    await new Promise(
+      (resolve,reject)=>{
+
+        channel.subscribe(
+          async status=>{
+
+            if(status === "SUBSCRIBED"){
+
+              joined = true;
+
+              joinScreen.style.display =
+                "none";
+
+
+              await channel.track({
+
+                name:myName,
+
+                cameraOn:
+                  cameraOn,
+
+                micOn:
+                  micOn
+              });
+
+
+              await sendEvent(
+                "hello",
+                {
+                  from:myId,
+                  name:myName,
+                  cameraOn:cameraOn,
+                  micOn:micOn
+                }
+              );
+
+
+              playJoinSound();
+
+              resolve();
+
+            }
+
+
+            if(status === "CHANNEL_ERROR"){
+
+              reject(
+                new Error(
+                  "Supabase channel error"
+                )
+              );
+
+            }
+
+          }
+        );
+
+      }
+    );
+
+
+    cameraBtn.classList.add(
+      "active"
+    );
+
+    micBtn.classList.add(
+      "active"
+    );
+
+
+    showToast(
+      "Class joined successfully"
+    );
+
+
+  }catch(error){
+
+    console.error(error);
+
+    showToast(
+      "Camera/Microphone permission required"
+    );
+
+    joinBtn.disabled =
+      false;
+
+    joinBtn.textContent =
+      "Join Class";
+
+    if(localStream){
+
+      localStream
+        .getTracks()
+        .forEach(
+          track=>track.stop()
+        );
+
+      localStream = null;
+    }
+
+  }
+
+};
+
+
+/* =========================================================
+   CREATE CAMERA + AUDIO PEER
+========================================================= */
+
+async function createPeer(
   peerId,
   peerName,
   initiator
@@ -2054,520 +1315,206 @@ function createPeer(
   }
 
 
-  names[peerId] =
-  peerName;
-
-
-  pendingCandidates[peerId] =
-  pendingCandidates[peerId] || [];
-
-
   const pc =
-  new RTCPeerConnection({
-
-    iceServers:[
-
+    new RTCPeerConnection(
       {
-        urls:
-        "stun:stun.l.google.com:19302"
-      },
-
-      {
-        urls:
-        "stun:stun1.l.google.com:19302"
+        iceServers:ICE_SERVERS
       }
-
-    ]
-
-  });
+    );
 
 
-  peers[peerId] =
-  pc;
+  peers[peerId] = {
+
+    pc:pc,
+
+    name:safeName(peerName)
+
+  };
 
 
-  /* =======================================================
-     ADD OUTGOING VIDEO + AUDIO
-     ======================================================= */
+  createRemoteTile(
+    peerId,
+    peerName
+  );
 
-  if(outgoingStream){
 
-    outgoingStream
-    .getTracks()
-    .forEach(
-      track=>{
+  if(localStream){
+
+    localStream
+      .getTracks()
+      .forEach(track=>{
 
         pc.addTrack(
           track,
-          outgoingStream
+          localStream
+        );
+
+      });
+
+  }
+
+
+  pc.onicecandidate =
+    event=>{
+
+      if(
+        event.candidate
+      ){
+
+        sendEvent(
+          "candidate",
+          {
+            from:myId,
+            to:peerId,
+            candidate:event.candidate
+          }
         );
 
       }
-    );
 
-  }
+    };
 
-
-  /* =======================================================
-     ICE
-     ======================================================= */
-
-  pc.onicecandidate =
-  event=>{
-
-    if(!event.candidate)
-      return;
-
-
-    channel.send({
-
-      type:"broadcast",
-
-      event:"candidate",
-
-      payload:{
-        senderId:myId,
-        targetId:peerId,
-        candidate:event.candidate
-      }
-
-    });
-
-  };
-
-
-  /* =======================================================
-     REMOTE TRACK
-     ======================================================= */
 
   pc.ontrack =
-  event=>{
+    event=>{
 
-    if(
-      !event.streams ||
-      !event.streams[0]
-    )
-      return;
+      const tile =
+        createRemoteTile(
+          peerId,
+          peerName
+        );
 
-
-    createRemoteTile(
-      peerId,
-      peerName,
-      event.streams[0]
-    );
-
-  };
+      const video =
+        tile.querySelector(
+          ".cameraVideo"
+        );
 
 
-  /* =======================================================
-     CONNECTION STATE
-     ======================================================= */
+      if(
+        event.streams &&
+        event.streams[0]
+      ){
+
+        video.srcObject =
+          event.streams[0];
+
+      }
+
+      video.play()
+        .catch(()=>{});
+
+    };
+
 
   pc.onconnectionstatechange =
-  ()=>{
+    ()=>{
 
-    console.log(
-      peerName,
-      pc.connectionState
-    );
+      if(
+        pc.connectionState ===
+        "failed"
+      ){
 
+        console.log(
+          "Camera connection failed:",
+          peerId
+        );
 
-    if(
-      pc.connectionState===
-      "connected"
-    ){
+      }
 
-      showToast(
-        peerName+
-        " connected"
-      );
+    };
 
-    }
-
-
-    if(
-      pc.connectionState===
-      "failed"
-    ){
-
-      removePeer(
-        peerId
-      );
-
-    }
-
-
-    if(
-      pc.connectionState===
-      "closed"
-    ){
-
-      removePeer(
-        peerId
-      );
-
-    }
-
-  };
-
-
-  /* =======================================================
-     OFFER
-     ======================================================= */
 
   if(initiator){
 
-    makeOffer(
-      peerId,
-      pc
-    );
-
-  }
-
-
-  return pc;
-
-}
-
-
-/* =========================================================
-   OFFER
-   ========================================================= */
-
-async function makeOffer(
-  peerId,
-  pc
-){
-
-  try{
-
     const offer =
-    await pc.createOffer();
-
+      await pc.createOffer();
 
     await pc.setLocalDescription(
       offer
     );
 
 
-    await channel.send({
-
-      type:"broadcast",
-
-      event:"offer",
-
-      payload:{
-        senderId:myId,
-        targetId:peerId,
+    await sendEvent(
+      "offer",
+      {
+        from:myId,
+        to:peerId,
         offer:offer,
-        sender:myName
+        name:myName,
+        cameraOn:cameraOn,
+        micOn:micOn
       }
-
-    });
-
-  }catch(error){
-
-    console.error(
-      "Offer error:",
-      error
     );
 
   }
 
+
+  return pc;
 }
 
 
 /* =========================================================
-   REMOTE TILE
-   ========================================================= */
-
-function createRemoteTile(
-  peerId,
-  peerName,
-  stream
-){
-
-  let tile =
-  document.getElementById(
-    "tile-"+peerId
-  );
-
-
-  if(!tile){
-
-    tile =
-    document.createElement(
-      "div"
-    );
-
-
-    tile.className =
-    "tile";
-
-
-    tile.id =
-    "tile-"+peerId;
-
-
-    const video =
-    document.createElement(
-      "video"
-    );
-
-
-    video.autoplay=true;
-
-    video.playsInline=true;
-
-    video.srcObject =
-    stream;
-
-
-    video.onloadedmetadata =
-    ()=>{
-      video.play().catch(
-        ()=>{}
-      );
-    };
-
-
-    const name =
-    document.createElement(
-      "div"
-    );
-
-
-    name.className =
-    "tile-name";
-
-
-    name.textContent =
-    peerName;
-
-
-    const status =
-    document.createElement(
-      "div"
-    );
-
-
-    status.className =
-    "tile-status";
-
-
-    status.id =
-    "status-"+peerId;
-
-
-    status.innerHTML =
-      '<div class="status-icon">🎤</div>'+
-      '<div class="status-icon">🎥</div>';
-
-
-    tile.appendChild(
-      video
-    );
-
-
-    tile.appendChild(
-      name
-    );
-
-
-    tile.appendChild(
-      status
-    );
-
-
-    videoGrid.appendChild(
-      tile
-    );
-
-  }
-  else{
-
-    const video =
-    tile.querySelector(
-      "video"
-    );
-
-
-    if(video){
-
-      video.srcObject =
-      stream;
-
-
-      video.play().catch(
-        ()=>{}
-      );
-
-    }
-
-  }
-
-
-  emptyMessage.style.display =
-  "none";
-
-}
-
-
-/* =========================================================
-   REMOVE PEER
-   ========================================================= */
-
-function removePeer(
-  peerId
-){
-
-  if(peers[peerId]){
-
-    try{
-
-      peers[peerId].close();
-
-    }catch(e){}
-
-
-    delete peers[peerId];
-
-  }
-
-
-  delete names[peerId];
-
-  delete pendingCandidates[peerId];
-
-
-  const tile =
-  document.getElementById(
-    "tile-"+peerId
-  );
-
-
-  if(tile){
-
-    tile.remove();
-
-  }
-
-
-  if(
-    videoGrid.children.length===
-    0
-  ){
-
-    emptyMessage.style.display =
-    "block";
-
-  }
-
-}
-
-
-/* =========================================================
-   HELLO EVENT
-   ========================================================= */
+   CAMERA OFFER
+========================================================= */
 
 channel.on(
-
   "broadcast",
-
-  {event:"hello"},
-
+  {
+    event:"offer"
+  },
   async ({payload})=>{
-
-    if(!payload)
-      return;
-
-
-    const peerId =
-    payload.senderId;
-
-
-    if(peerId===myId)
-      return;
-
-
-    names[peerId] =
-    payload.sender;
-
-
-    showToast(
-      payload.sender+
-      " joined the class"
-    );
-
-
-    const initiator =
-    myId < peerId;
-
-
-    createPeer(
-      peerId,
-      payload.sender,
-      initiator
-    );
-
-  }
-
-);
-
-
-/* =========================================================
-   OFFER EVENT
-   ========================================================= */
-
-channel.on(
-
-  "broadcast",
-
-  {event:"offer"},
-
-  async ({payload})=>{
-
-    if(!payload)
-      return;
-
 
     if(
-      payload.targetId!==myId
-    )
-      return;
+      !payload ||
+      payload.to !== myId
+    ) return;
 
 
     const peerId =
-    payload.senderId;
+      payload.from;
 
 
     const pc =
-    createPeer(
-      peerId,
-      payload.sender,
-      false
-    );
+      await createPeer(
+        peerId,
+        payload.name,
+        false
+      );
 
 
     try{
 
       await pc.setRemoteDescription(
-
-        new RTCSessionDescription(
-          payload.offer
-        )
-
+        payload.offer
       );
 
 
-      await addPendingCandidates(
-        peerId,
-        pc
-      );
+      if(
+        pendingCandidates[peerId]
+      ){
+
+        for(
+          const candidate
+          of pendingCandidates[peerId]
+        ){
+
+          await pc
+            .addIceCandidate(
+              candidate
+            )
+            .catch(()=>{});
+
+        }
+
+        delete pendingCandidates[
+          peerId
+        ];
+
+      }
 
 
       const answer =
-      await pc.createAnswer();
+        await pc.createAnswer();
 
 
       await pc.setLocalDescription(
@@ -2575,20 +1522,85 @@ channel.on(
       );
 
 
-      await channel.send({
+      await sendEvent(
+        "answer",
+        {
+          from:myId,
+          to:peerId,
+          answer:answer
+        }
+      );
 
-        type:"broadcast",
 
-        event:"answer",
+    }catch(error){
 
-        payload:{
-          senderId:myId,
-          targetId:peerId,
-          answer:answer,
-          sender:myName
+      console.error(
+        "Offer error:",
+        error
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   CAMERA ANSWER
+========================================================= */
+
+channel.on(
+  "broadcast",
+  {
+    event:"answer"
+  },
+  async ({payload})=>{
+
+    if(
+      !payload ||
+      payload.to !== myId
+    ) return;
+
+
+    const peer =
+      peers[payload.from];
+
+    if(!peer) return;
+
+
+    try{
+
+      await peer.pc.setRemoteDescription(
+        payload.answer
+      );
+
+
+      if(
+        pendingCandidates[
+          payload.from
+        ]
+      ){
+
+        for(
+          const candidate
+          of pendingCandidates[
+            payload.from
+          ]
+        ){
+
+          await peer.pc
+            .addIceCandidate(
+              candidate
+            )
+            .catch(()=>{});
+
         }
 
-      });
+        delete pendingCandidates[
+          payload.from
+        ];
+
+      }
 
     }catch(error){
 
@@ -2600,673 +1612,1138 @@ channel.on(
     }
 
   }
-
 );
 
 
 /* =========================================================
-   ANSWER EVENT
-   ========================================================= */
+   CAMERA ICE
+========================================================= */
 
 channel.on(
-
   "broadcast",
-
-  {event:"answer"},
-
+  {
+    event:"candidate"
+  },
   async ({payload})=>{
 
-    if(!payload)
-      return;
-
-
     if(
-      payload.targetId!==myId
-    )
-      return;
-
-
-    const pc =
-    peers[payload.senderId];
-
-
-    if(!pc)
-      return;
-
-
-    try{
-
-      await pc.setRemoteDescription(
-
-        new RTCSessionDescription(
-          payload.answer
-        )
-
-      );
-
-
-      await addPendingCandidates(
-        payload.senderId,
-        pc
-      );
-
-    }catch(error){
-
-      console.error(
-        "Remote answer error:",
-        error
-      );
-
-    }
-
-  }
-
-);
-
-
-/* =========================================================
-   ICE CANDIDATE
-   ========================================================= */
-
-channel.on(
-
-  "broadcast",
-
-  {event:"candidate"},
-
-  async ({payload})=>{
-
-    if(!payload)
-      return;
-
-
-    if(
-      payload.targetId!==myId
-    )
-      return;
+      !payload ||
+      payload.to !== myId
+    ) return;
 
 
     const peerId =
-    payload.senderId;
+      payload.from;
 
 
-    const pc =
-    peers[peerId];
+    const peer =
+      peers[peerId];
 
 
-    if(!pc){
+    if(
+      !peer ||
+      !peer.pc.remoteDescription
+    ){
 
-      pendingCandidates[peerId] =
-      pendingCandidates[peerId] || [];
+      if(
+        !pendingCandidates[peerId]
+      ){
 
+        pendingCandidates[
+          peerId
+        ] = [];
 
-      pendingCandidates[peerId]
-      .push(
+      }
+
+      pendingCandidates[
+        peerId
+      ].push(
         payload.candidate
       );
 
-
       return;
-
     }
 
 
-    try{
-
-      if(
-        pc.remoteDescription
-      ){
-
-        await pc.addIceCandidate(
-
-          new RTCIceCandidate(
-            payload.candidate
-          )
-
-        );
-
-      }
-      else{
-
-        pendingCandidates[peerId] =
-        pendingCandidates[peerId] || [];
-
-
-        pendingCandidates[peerId]
-        .push(
-          payload.candidate
-        );
-
-      }
-
-    }catch(error){
-
-      console.error(
-        "ICE error:",
-        error
-      );
-
-    }
+    await peer.pc
+      .addIceCandidate(
+        payload.candidate
+      )
+      .catch(()=>{});
 
   }
-
 );
 
 
 /* =========================================================
-   PENDING ICE
-   ========================================================= */
+   HELLO
+========================================================= */
 
-async function addPendingCandidates(
-  peerId,
-  pc
-){
+channel.on(
+  "broadcast",
+  {
+    event:"hello"
+  },
+  async ({payload})=>{
 
-  const list =
-  pendingCandidates[peerId];
-
-
-  if(
-    !list ||
-    !list.length
-  )
-    return;
+    if(
+      !payload ||
+      payload.from === myId
+    ) return;
 
 
-  for(
-    const candidate of list
-  ){
+    const peerId =
+      payload.from;
 
-    try{
 
-      await pc.addIceCandidate(
+    createRemoteTile(
+      peerId,
+      payload.name
+    );
 
-        new RTCIceCandidate(
-          candidate
-        )
 
+    const remoteTile =
+      document.getElementById(
+        "tile-" + peerId
       );
 
-    }catch(error){
 
-      console.error(
-        "Pending ICE error:",
-        error
+    if(payload.cameraOn === false){
+
+      remoteTile.classList.add(
+        "camera-off"
+      );
+
+    }else{
+
+      remoteTile.classList.remove(
+        "camera-off"
+      );
+
+    }
+
+
+    /*
+      Only one side creates the initial offer.
+      This prevents offer collision.
+    */
+
+    const initiator =
+      myId < peerId;
+
+
+    await createPeer(
+      peerId,
+      payload.name,
+      initiator
+    );
+
+
+    /*
+      If we are already sharing screen,
+      give the new participant the screen too.
+    */
+
+    if(
+      screenOn &&
+      screenStream
+    ){
+
+      await startScreenPeerFor(
+        peerId
       );
 
     }
 
   }
-
-
-  pendingCandidates[peerId] =
-  [];
-
-}
-
-
-/* =========================================================
-   CHAT EVENT
-   ========================================================= */
-
-channel.on(
-
-  "broadcast",
-
-  {event:"chat"},
-
-  ({payload})=>{
-
-    if(!payload)
-      return;
-
-
-    if(
-      payload.senderId===myId
-    )
-      return;
-
-
-    addMessage(
-      payload.sender,
-      payload.message
-    );
-
-  }
-
 );
 
 
 /* =========================================================
    PRESENCE
-   ========================================================= */
+========================================================= */
 
 channel.on(
-
   "presence",
-
-  {event:"sync"},
-
-  ()=>{
+  {
+    event:"sync"
+  },
+  async ()=>{
 
     const state =
-    channel.presenceState();
+      channel.presenceState();
 
 
-    Object.keys(state)
-    .forEach(
-      key=>{
+    for(
+      const key in state
+    ){
 
-        const entries =
-        state[key];
+      if(key === myId)
+        continue;
 
 
-        if(
-          !entries ||
-          !entries.length
-        )
-          return;
+      const item =
+        state[key] &&
+        state[key][0];
 
 
-        const info =
-        entries[0];
+      if(!item)
+        continue;
 
 
-        if(
-          info.userId &&
-          info.userId!==myId
-        ){
-
-          names[info.userId] =
-          info.name ||
-          "Student";
-
-
-          createPeer(
-
-            info.userId,
-
-            info.name ||
-            "Student",
-
-            myId <
-            info.userId
-
-          );
-
-        }
-
-      }
-    );
-
-  }
-
-);
-
-
-channel.on(
-
-  "presence",
-
-  {event:"join"},
-
-  ({key,newPresences})=>{
-
-    if(key===myId)
-      return;
-
-
-    if(
-      !newPresences ||
-      !newPresences.length
-    )
-      return;
-
-
-    const info =
-    newPresences[0];
-
-
-    const peerId =
-    info.userId ||
-    key;
-
-
-    const peerName =
-    info.name ||
-    "Student";
-
-
-    if(peerId===myId)
-      return;
-
-
-    names[peerId] =
-    peerName;
-
-
-    showToast(
-      peerName+
-      " joined the class"
-    );
-
-
-    createPeer(
-      peerId,
-      peerName,
-      myId < peerId
-    );
-
-  }
-
-);
-
-
-channel.on(
-
-  "presence",
-
-  {event:"leave"},
-
-  ({key,leftPresences})=>{
-
-    if(key===myId)
-      return;
-
-
-    const peerId =
-    key;
-
-
-    const peerName =
-    names[peerId] ||
-    "Student";
-
-
-    removePeer(
-      peerId
-    );
-
-
-    showToast(
-      peerName+
-      " left the class"
-    );
-
-  }
-
-);
-
-
-/* =========================================================
-   CAMERA
-   ========================================================= */
-
-function toggleCamera(){
-
-  if(!localStream)
-    return;
-
-
-  const track =
-  localStream
-  .getVideoTracks()[0];
-
-
-  if(!track)
-    return;
-
-
-  cameraOn =
-  !cameraOn;
-
-
-  track.enabled =
-  cameraOn;
-
-
-  const btn =
-  document.getElementById(
-    "cameraBtn"
-  );
-
-
-  btn.classList.toggle(
-    "off",
-    !cameraOn
-  );
-
-
-  btn.dataset.tip =
-    cameraOn
-    ? "Camera"
-    : "Camera Off";
-
-
-  updateLocalStatus();
-
-}
-
-
-/* =========================================================
-   MICROPHONE
-   ========================================================= */
-
-function toggleMic(){
-
-  if(!localStream)
-    return;
-
-
-  const track =
-  localStream
-  .getAudioTracks()[0];
-
-
-  if(!track)
-    return;
-
-
-  micOn =
-  !micOn;
-
-
-  track.enabled =
-  micOn;
-
-
-  const btn =
-  document.getElementById(
-    "micBtn"
-  );
-
-
-  btn.classList.toggle(
-    "off",
-    !micOn
-  );
-
-
-  btn.dataset.tip =
-    micOn
-    ? "Microphone"
-    : "Microphone Muted";
-
-
-  updateLocalStatus();
-
-}
-
-
-/* =========================================================
-   LOCAL STATUS
-   ========================================================= */
-
-function updateLocalStatus(){
-
-  const status =
-  document.getElementById(
-    "status-"+myId
-  );
-
-
-  if(!status)
-    return;
-
-
-  status.innerHTML =
-    '<div class="status-icon">'+
-    (micOn ? "🎤" : "🔇")+
-    '</div>'+
-    '<div class="status-icon">'+
-    (cameraOn ? "🎥" : "📷")+
-    '</div>';
-
-}
-
-
-/* =========================================================
-   SCREEN SHARE
-   ========================================================= */
-
-async function toggleScreen(){
-
-  if(!localStream)
-    return;
-
-
-  if(!screenOn){
-
-    try{
-
-      screenStream =
-      await navigator
-      .mediaDevices
-      .getDisplayMedia({
-
-        video:true
-
-      });
-
-
-      const screenTrack =
-      screenStream
-      .getVideoTracks()[0];
-
-
-      if(!screenTrack)
-        return;
-
-
-      screenOn =
-      true;
-
-
-      /*
-         We don't replace the remote track anymore.
-         The canvas compositor automatically combines
-         screen + camera.
-      */
-
-
-      const localTile =
-      document.getElementById(
-        "tile-"+myId
+      createRemoteTile(
+        key,
+        item.name || "Participant"
       );
 
 
-      if(localTile){
+      const tile =
+        document.getElementById(
+          "tile-" + key
+        );
 
-        localTile.classList.add(
-          "screen-sharing"
+
+      if(item.cameraOn === false){
+
+        tile.classList.add(
+          "camera-off"
         );
 
       }
 
 
-      document
-      .getElementById(
-        "screenBtn"
-      )
-      .classList.add(
-        "active"
+      const initiator =
+        myId < key;
+
+
+      await createPeer(
+        key,
+        item.name || "Participant",
+        initiator
       );
 
 
-      document
-      .getElementById(
-        "screenBtn"
-      )
-      .dataset.tip =
-      "Stop Screen Share";
+      if(
+        screenOn &&
+        screenStream
+      ){
+
+        await startScreenPeerFor(
+          key
+        );
+
+      }
+
+    }
+
+  }
+);
 
 
-      screenTrack.onended =
-      ()=>{
+/* =========================================================
+   MEDIA STATE
+========================================================= */
 
-        stopScreen();
+channel.on(
+  "broadcast",
+  {
+    event:"media-state"
+  },
+  ({payload})=>{
+
+    if(
+      !payload ||
+      payload.from === myId
+    ) return;
+
+
+    const tile =
+      document.getElementById(
+        "tile-" + payload.from
+      );
+
+
+    if(!tile) return;
+
+
+    if(
+      payload.cameraOn === false
+    ){
+
+      tile.classList.add(
+        "camera-off"
+      );
+
+    }else{
+
+      tile.classList.remove(
+        "camera-off"
+      );
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   CAMERA BUTTON
+========================================================= */
+
+cameraBtn.onclick =
+async function(){
+
+  if(!localStream) return;
+
+
+  const tracks =
+    localStream.getVideoTracks();
+
+
+  if(!tracks.length) return;
+
+
+  cameraOn =
+    !cameraOn;
+
+
+  tracks.forEach(
+    track=>{
+      track.enabled =
+        cameraOn;
+    }
+  );
+
+
+  applyLocalState();
+
+
+  cameraBtn.classList.toggle(
+    "active",
+    cameraOn
+  );
+
+
+  await sendEvent(
+    "media-state",
+    {
+      from:myId,
+      name:myName,
+      cameraOn:cameraOn,
+      micOn:micOn
+    }
+  );
+
+};
+
+
+/* =========================================================
+   MIC BUTTON
+========================================================= */
+
+micBtn.onclick =
+async function(){
+
+  if(!localStream) return;
+
+
+  const tracks =
+    localStream.getAudioTracks();
+
+
+  if(!tracks.length) return;
+
+
+  micOn =
+    !micOn;
+
+
+  tracks.forEach(
+    track=>{
+      track.enabled =
+        micOn;
+    }
+  );
+
+
+  micBtn.classList.toggle(
+    "active",
+    micOn
+  );
+
+
+  await sendEvent(
+    "media-state",
+    {
+      from:myId,
+      name:myName,
+      cameraOn:cameraOn,
+      micOn:micOn
+    }
+  );
+
+};
+
+
+/* =========================================================
+   START SCREEN SHARE
+========================================================= */
+
+screenBtn.onclick =
+async function(){
+
+  if(screenOn){
+
+    await stopScreenShare();
+
+    return;
+
+  }
+
+
+  await startScreenShare();
+
+};
+
+
+/* =========================================================
+   START SCREEN SHARE
+========================================================= */
+
+async function startScreenShare(){
+
+  if(
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getDisplayMedia
+  ){
+
+    showToast(
+      "Screen sharing is not supported on this browser"
+    );
+
+    return;
+
+  }
+
+
+  try{
+
+    screenStream =
+      await navigator.mediaDevices.getDisplayMedia({
+
+        video:{
+          frameRate:{
+            ideal:30,
+            max:30
+          }
+        },
+
+        audio:false
+
+      });
+
+
+    const screenTrack =
+      screenStream.getVideoTracks()[0];
+
+
+    if(
+      screenTrack &&
+      "contentHint" in screenTrack
+    ){
+
+      screenTrack.contentHint =
+        "detail";
+
+    }
+
+
+    screenOn = true;
+
+
+    /*
+      Local screen preview.
+    */
+
+    const localTile =
+      createLocalTile();
+
+
+    const screenVideo =
+      localTile.querySelector(
+        ".screenVideo"
+      );
+
+
+    screenVideo.srcObject =
+      screenStream;
+
+
+    localTile.classList.add(
+      "screen-sharing"
+    );
+
+
+    screenVideo.play()
+      .catch(()=>{});
+
+
+    screenBtn.classList.add(
+      "active"
+    );
+
+
+    screenBtn.textContent =
+      "⛔ Stop Screen";
+
+
+    updateScreenLayout();
+
+
+    /*
+      Send screen directly through a
+      separate WebRTC connection.
+    */
+
+    for(
+      const peerId in peers
+    ){
+
+      await startScreenPeerFor(
+        peerId
+      );
+
+    }
+
+
+    screenTrack.onended =
+      async ()=>{
+
+        if(screenOn){
+
+          await stopScreenShare();
+
+        }
 
       };
 
 
-      showToast(
-        "Screen sharing started"
+    showToast(
+      "Screen sharing started"
+    );
+
+
+  }catch(error){
+
+    console.error(
+      "Screen share error:",
+      error
+    );
+
+    screenStream = null;
+    screenOn = false;
+
+    showToast(
+      "Screen sharing cancelled"
+    );
+
+  }
+
+}
+
+
+/* =========================================================
+   CREATE SCREEN PEER
+========================================================= */
+
+async function startScreenPeerFor(
+  peerId
+){
+
+  if(
+    !screenOn ||
+    !screenStream
+  ){
+
+    return;
+
+  }
+
+
+  if(screenPeers[peerId]){
+
+    return;
+
+  }
+
+
+  const pc =
+    new RTCPeerConnection(
+      {
+        iceServers:ICE_SERVERS
+      }
+    );
+
+
+  screenPeers[peerId] =
+    pc;
+
+
+  const screenTrack =
+    screenStream.getVideoTracks()[0];
+
+
+  if(screenTrack){
+
+    const sender =
+      pc.addTrack(
+        screenTrack,
+        screenStream
       );
+
+
+    /*
+      Keep screen reasonably smooth
+      and clear.
+    */
+
+    try{
+
+      const params =
+        sender.getParameters();
+
+
+      if(
+        !params.encodings ||
+        !params.encodings.length
+      ){
+
+        params.encodings = [{}];
+
+      }
+
+
+      params.encodings[0].maxFramerate =
+        30;
+
+      params.encodings[0].maxBitrate =
+        3000000;
+
+
+      await sender.setParameters(
+        params
+      );
+
+    }catch(e){
+
+      console.log(
+        "Screen sender parameters:",
+        e
+      );
+
+    }
+
+  }
+
+
+  pc.onicecandidate =
+    event=>{
+
+      if(
+        event.candidate
+      ){
+
+        sendEvent(
+          "screen-candidate",
+          {
+            from:myId,
+            to:peerId,
+            candidate:event.candidate
+          }
+        );
+
+      }
+
+    };
+
+
+  pc.ontrack =
+    event=>{
+
+      const peer =
+        peers[peerId];
+
+
+      const peerName =
+        peer ?
+        peer.name :
+        "Participant";
+
+
+      const tile =
+        createRemoteTile(
+          peerId,
+          peerName
+        );
+
+
+      const video =
+        tile.querySelector(
+          ".screenVideo"
+        );
+
+
+      if(
+        event.streams &&
+        event.streams[0]
+      ){
+
+        video.srcObject =
+          event.streams[0];
+
+      }
+
+
+      tile.classList.add(
+        "screen-sharing"
+      );
+
+
+      video.play()
+        .catch(()=>{});
+
+
+      updateScreenLayout();
+
+    };
+
+
+  pc.onconnectionstatechange =
+    ()=>{
+
+      if(
+        pc.connectionState ===
+        "failed"
+      ){
+
+        console.log(
+          "Screen connection failed:",
+          peerId
+        );
+
+      }
+
+    };
+
+
+  const offer =
+    await pc.createOffer();
+
+
+  await pc.setLocalDescription(
+    offer
+  );
+
+
+  await sendEvent(
+    "screen-offer",
+    {
+      from:myId,
+      to:peerId,
+      offer:offer,
+      name:myName
+    }
+  );
+
+}
+
+
+/* =========================================================
+   SCREEN OFFER
+========================================================= */
+
+channel.on(
+  "broadcast",
+  {
+    event:"screen-offer"
+  },
+  async ({payload})=>{
+
+    if(
+      !payload ||
+      payload.to !== myId
+    ) return;
+
+
+    const peerId =
+      payload.from;
+
+
+    /*
+      If an older screen connection exists,
+      close it first.
+    */
+
+    if(
+      screenPeers[peerId]
+    ){
+
+      screenPeers[
+        peerId
+      ].close();
+
+      delete screenPeers[
+        peerId
+      ];
+
+    }
+
+
+    const pc =
+      new RTCPeerConnection(
+        {
+          iceServers:ICE_SERVERS
+        }
+      );
+
+
+    screenPeers[peerId] =
+      pc;
+
+
+    pc.onicecandidate =
+      event=>{
+
+        if(
+          event.candidate
+        ){
+
+          sendEvent(
+            "screen-candidate",
+            {
+              from:myId,
+              to:peerId,
+              candidate:event.candidate
+            }
+          );
+
+        }
+
+      };
+
+
+    pc.ontrack =
+      event=>{
+
+        const peer =
+          peers[peerId];
+
+
+        const tile =
+          createRemoteTile(
+            peerId,
+            peer ?
+              peer.name :
+              payload.name
+          );
+
+
+        const video =
+          tile.querySelector(
+            ".screenVideo"
+          );
+
+
+        if(
+          event.streams &&
+          event.streams[0]
+        ){
+
+          video.srcObject =
+            event.streams[0];
+
+        }
+
+
+        tile.classList.add(
+          "screen-sharing"
+        );
+
+
+        video.play()
+          .catch(()=>{});
+
+
+        updateScreenLayout();
+
+      };
+
+
+    await pc.setRemoteDescription(
+      payload.offer
+    );
+
+
+    if(
+      pendingScreenCandidates[
+        peerId
+      ]
+    ){
+
+      for(
+        const candidate
+        of pendingScreenCandidates[
+          peerId
+        ]
+      ){
+
+        await pc
+          .addIceCandidate(
+            candidate
+          )
+          .catch(()=>{});
+
+      }
+
+      delete pendingScreenCandidates[
+        peerId
+      ];
+
+    }
+
+
+    const answer =
+      await pc.createAnswer();
+
+
+    await pc.setLocalDescription(
+      answer
+    );
+
+
+    await sendEvent(
+      "screen-answer",
+      {
+        from:myId,
+        to:peerId,
+        answer:answer
+      }
+    );
+
+  }
+);
+
+
+/* =========================================================
+   SCREEN ANSWER
+========================================================= */
+
+channel.on(
+  "broadcast",
+  {
+    event:"screen-answer"
+  },
+  async ({payload})=>{
+
+    if(
+      !payload ||
+      payload.to !== myId
+    ) return;
+
+
+    const pc =
+      screenPeers[
+        payload.from
+      ];
+
+
+    if(!pc) return;
+
+
+    try{
+
+      await pc.setRemoteDescription(
+        payload.answer
+      );
+
+
+      if(
+        pendingScreenCandidates[
+          payload.from
+        ]
+      ){
+
+        for(
+          const candidate
+          of pendingScreenCandidates[
+            payload.from
+          ]
+        ){
+
+          await pc
+            .addIceCandidate(
+              candidate
+            )
+            .catch(()=>{});
+
+        }
+
+        delete pendingScreenCandidates[
+          payload.from
+        ];
+
+      }
 
     }catch(error){
 
-      console.log(
-        "Screen share cancelled",
+      console.error(
+        "Screen answer error:",
         error
       );
 
     }
 
   }
-  else{
-
-    stopScreen();
-
-  }
-
-}
+);
 
 
 /* =========================================================
-   STOP SCREEN
-   ========================================================= */
+   SCREEN ICE
+========================================================= */
 
-async function stopScreen(){
+channel.on(
+  "broadcast",
+  {
+    event:"screen-candidate"
+  },
+  async ({payload})=>{
 
-  if(!screenOn)
-    return;
+    if(
+      !payload ||
+      payload.to !== myId
+    ) return;
 
 
-  screenOn =
-  false;
+    const peerId =
+      payload.from;
+
+
+    const pc =
+      screenPeers[peerId];
+
+
+    if(
+      !pc ||
+      !pc.remoteDescription
+    ){
+
+      if(
+        !pendingScreenCandidates[
+          peerId
+        ]
+      ){
+
+        pendingScreenCandidates[
+          peerId
+        ] = [];
+
+      }
+
+
+      pendingScreenCandidates[
+        peerId
+      ].push(
+        payload.candidate
+      );
+
+      return;
+
+    }
+
+
+    await pc
+      .addIceCandidate(
+        payload.candidate
+      )
+      .catch(()=>{});
+
+  }
+);
+
+
+/* =========================================================
+   STOP SCREEN SHARE
+========================================================= */
+
+async function stopScreenShare(){
+
+  if(!screenOn) return;
+
+
+  screenOn = false;
 
 
   if(screenStream){
 
     screenStream
-    .getTracks()
-    .forEach(
-      track=>{
-        track.stop();
-      }
-    );
+      .getTracks()
+      .forEach(
+        track=>track.stop()
+      );
+
+    screenStream = null;
 
   }
 
 
-  screenStream =
-  null;
+  /*
+    Close every separate screen connection.
+  */
 
+  for(
+    const peerId in screenPeers
+  ){
+
+    try{
+
+      screenPeers[
+        peerId
+      ].close();
+
+    }catch(e){}
+
+  }
+
+
+  Object.keys(
+    screenPeers
+  ).forEach(
+    key=>{
+      delete screenPeers[key];
+    }
+  );
+
+
+  /*
+    Tell everyone to remove screen.
+  */
+
+  await sendEvent(
+    "screen-stop",
+    {
+      from:myId
+    }
+  );
+
+
+  /*
+    Remove local screen.
+  */
 
   const localTile =
-  document.getElementById(
-    "tile-"+myId
-  );
+    document.getElementById(
+      "tile-" + myId
+    );
 
 
   if(localTile){
@@ -3275,24 +2752,71 @@ async function stopScreen(){
       "screen-sharing"
     );
 
+
+    const screenVideo =
+      localTile.querySelector(
+        ".screenVideo"
+      );
+
+
+    if(screenVideo){
+
+      screenVideo.srcObject =
+        null;
+
+    }
+
   }
 
 
+  /*
+    Remove remote screen state.
+  */
+
   document
-  .getElementById(
-    "screenBtn"
-  )
-  .classList.remove(
+    .querySelectorAll(
+      ".tile.screen-sharing"
+    )
+    .forEach(tile=>{
+
+      if(
+        tile.id !==
+        "tile-" + myId
+      ){
+
+        tile.classList.remove(
+          "screen-sharing"
+        );
+
+
+        const video =
+          tile.querySelector(
+            ".screenVideo"
+          );
+
+
+        if(video){
+
+          video.srcObject =
+            null;
+
+        }
+
+      }
+
+    });
+
+
+  screenBtn.classList.remove(
     "active"
   );
 
 
-  document
-  .getElementById(
-    "screenBtn"
-  )
-  .dataset.tip =
-  "Screen Share";
+  screenBtn.textContent =
+    "🖥 Screen";
+
+
+  updateScreenLayout();
 
 
   showToast(
@@ -3303,28 +2827,253 @@ async function stopScreen(){
 
 
 /* =========================================================
-   LEAVE CLASS
-   ========================================================= */
+   REMOTE SCREEN STOP
+========================================================= */
 
-async function leaveClass(){
+channel.on(
+  "broadcast",
+  {
+    event:"screen-stop"
+  },
+  ({payload})=>{
 
-  const answer =
-  confirm(
-    "Are you sure you want to leave the class?"
+    if(
+      !payload ||
+      payload.from === myId
+    ) return;
+
+
+    const peerId =
+      payload.from;
+
+
+    if(
+      screenPeers[peerId]
+    ){
+
+      try{
+
+        screenPeers[
+          peerId
+        ].close();
+
+      }catch(e){}
+
+
+      delete screenPeers[
+        peerId
+      ];
+
+    }
+
+
+    const tile =
+      document.getElementById(
+        "tile-" + peerId
+      );
+
+
+    if(tile){
+
+      tile.classList.remove(
+        "screen-sharing"
+      );
+
+
+      const video =
+        tile.querySelector(
+          ".screenVideo"
+        );
+
+
+      if(video){
+
+        video.srcObject =
+          null;
+
+      }
+
+    }
+
+
+    updateScreenLayout();
+
+  }
+);
+
+
+/* =========================================================
+   CHAT BUTTON
+========================================================= */
+
+chatBtn.onclick =
+function(){
+
+  if(
+    chatPanel.style.display ===
+    "flex"
+  ){
+
+    chatPanel.style.display =
+      "none";
+
+  }else{
+
+    chatPanel.style.display =
+      "flex";
+
+    chatInput.focus();
+
+  }
+
+};
+
+
+/* =========================================================
+   SEND CHAT
+========================================================= */
+
+async function sendChatMessage(){
+
+  const text =
+    chatInput.value.trim();
+
+
+  if(!text) return;
+
+
+  await sendEvent(
+    "chat-message",
+    {
+      from:myId,
+      name:myName,
+      message:text
+    }
   );
 
 
-  if(!answer)
-    return;
+  addMessage(
+    myName,
+    text
+  );
 
 
-  try{
+  chatInput.value =
+    "";
 
-    await channel.untrack();
+}
 
-  }catch(error){
 
-    console.log(error);
+sendChat.onclick =
+sendChatMessage;
+
+
+chatInput.addEventListener(
+  "keydown",
+  event=>{
+
+    if(
+      event.key ===
+      "Enter"
+    ){
+
+      event.preventDefault();
+
+      sendChatMessage();
+
+    }
+
+  }
+);
+
+
+/* =========================================================
+   RECEIVE CHAT
+========================================================= */
+
+channel.on(
+  "broadcast",
+  {
+    event:"chat-message"
+  },
+  ({payload})=>{
+
+    if(
+      !payload ||
+      payload.from === myId
+    ) return;
+
+
+    addMessage(
+      payload.name ||
+      "Participant",
+
+      payload.message ||
+      ""
+    );
+
+  }
+);
+
+
+function addMessage(
+  name,
+  text
+){
+
+  const item =
+    document.createElement("div");
+
+  item.className =
+    "message";
+
+
+  const sender =
+    document.createElement("b");
+
+  sender.textContent =
+    safeName(name);
+
+
+  const message =
+    document.createElement("div");
+
+  message.textContent =
+    text;
+
+
+  item.appendChild(
+    sender
+  );
+
+  item.appendChild(
+    message
+  );
+
+
+  messages.appendChild(
+    item
+  );
+
+
+  messages.scrollTop =
+    messages.scrollHeight;
+
+}
+
+
+/* =========================================================
+   LEAVE
+========================================================= */
+
+leaveBtn.onclick =
+async function(){
+
+  if(
+    screenOn
+  ){
+
+    await stopScreenShare();
 
   }
 
@@ -3335,42 +3084,26 @@ async function leaveClass(){
 
     try{
 
-      peers[peerId].close();
+      peers[
+        peerId
+      ].pc.close();
 
     }catch(e){}
 
   }
 
 
-  Object.keys(peers)
-  .forEach(
-    key=>delete peers[key]
-  );
-
-
-  if(
-    compositorAnimation
+  for(
+    const peerId in screenPeers
   ){
 
-    cancelAnimationFrame(
-      compositorAnimation
-    );
+    try{
 
-    compositorAnimation =
-    null;
+      screenPeers[
+        peerId
+      ].close();
 
-  }
-
-
-  if(screenStream){
-
-    screenStream
-    .getTracks()
-    .forEach(
-      track=>{
-        track.stop();
-      }
-    );
+    }catch(e){}
 
   }
 
@@ -3378,101 +3111,50 @@ async function leaveClass(){
   if(localStream){
 
     localStream
-    .getTracks()
-    .forEach(
-      track=>{
-        track.stop();
-      }
-    );
+      .getTracks()
+      .forEach(
+        track=>track.stop()
+      );
+
+    localStream =
+      null;
 
   }
 
 
-  screenStream =
-  null;
+  try{
 
+    await channel.untrack();
 
-  localStream =
-  null;
-
-
-  outgoingStream =
-  null;
-
-
-  compositorCanvas =
-  null;
-
-
-  compositorContext =
-  null;
+  }catch(e){}
 
 
   try{
 
     await channel.unsubscribe();
 
-  }catch(error){
-
-    console.log(error);
-
-  }
+  }catch(e){}
 
 
   joined =
-  false;
+    false;
 
 
-  videoGrid.innerHTML =
-  "";
+  location.reload();
 
-
-  emptyMessage.style.display =
-  "block";
-
-
-  document
-  .getElementById(
-    "joinScreen"
-  )
-  .style.display =
-  "flex";
-
-
-  document
-  .getElementById(
-    "nameInput"
-  )
-  .value =
-  "";
-
-
-  showToast(
-    "You left the class"
-  );
-
-}
+};
 
 
 /* =========================================================
-   ENTER KEY ON NAME
-   ========================================================= */
+   PAGE START
+========================================================= */
 
-document
-.getElementById(
-  "nameInput"
-)
-.addEventListener(
-  "keydown",
-  e=>{
+cameraBtn.classList.add(
+  "active"
+);
 
-    if(e.key==="Enter"){
-
-      joinClass();
-
-    }
-
-  }
+micBtn.classList.add(
+  "active"
 );
 
 </script>
