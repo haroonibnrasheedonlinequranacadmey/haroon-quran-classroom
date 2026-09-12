@@ -732,12 +732,35 @@ const creatingPeers = {};
 
 let channel = null;
 
+
+/* =========================================================
+   METERED TURN + STUN
+   ONLY ICE SERVER SECTION CHANGED
+========================================================= */
+
 const ICE_SERVERS = [
   {
-    urls:"stun:stun.l.google.com:19302"
+    urls:"stun:stun.relay.metered.ca:80"
   },
   {
-    urls:"stun:stun1.l.google.com:19302"
+    urls:"turn:global.relay.metered.ca:80",
+    username:"PASTE_METERED_USERNAME_HERE",
+    credential:"PASTE_METERED_CREDENTIAL_HERE"
+  },
+  {
+    urls:"turn:global.relay.metered.ca:80?transport=tcp",
+    username:"PASTE_METERED_USERNAME_HERE",
+    credential:"PASTE_METERED_CREDENTIAL_HERE"
+  },
+  {
+    urls:"turn:global.relay.metered.ca:443",
+    username:"PASTE_METERED_USERNAME_HERE",
+    credential:"PASTE_METERED_CREDENTIAL_HERE"
+  },
+  {
+    urls:"turns:global.relay.metered.ca:443?transport=tcp",
+    username:"PASTE_METERED_USERNAME_HERE",
+    credential:"PASTE_METERED_CREDENTIAL_HERE"
   }
 ];
 
@@ -2495,7 +2518,7 @@ async function(){
 
 
 /* =========================================================
-   START SCREEN SHARE
+   START SCREEN SHARE BUTTON
 ========================================================= */
 
 screenBtn.onclick =
