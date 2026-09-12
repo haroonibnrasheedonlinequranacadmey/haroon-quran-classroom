@@ -384,6 +384,44 @@ header span{
   background:#c43737;
 }
 
+/* SCREEN AUDIO BUTTON */
+
+#screenAudioBtn{
+  display:none;
+  background:#155e75;
+}
+
+#screenAudioBtn.active{
+  background:#087f5b;
+}
+
+#screenAudioBtn.off{
+  background:#6b2737;
+}
+
+/* CLASS TIMER */
+
+#classTimer{
+  position:absolute;
+  left:12px;
+  top:12px;
+  z-index:80;
+
+  display:none;
+
+  background:rgba(0,0,0,.72);
+  color:white;
+
+  padding:7px 11px;
+  border-radius:9px;
+
+  font-size:13px;
+  font-weight:bold;
+
+  backdrop-filter:blur(6px);
+  box-shadow:0 5px 18px rgba(0,0,0,.35);
+}
+
 /* CHAT */
 
 #chatPanel{
@@ -409,6 +447,49 @@ header span{
   padding:13px;
   font-weight:bold;
   border-bottom:1px solid rgba(255,255,255,.08);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+}
+
+#emojiBtn{
+  border:0;
+  background:transparent;
+  color:white;
+  cursor:pointer;
+  font-size:22px;
+  padding:2px 5px;
+}
+
+#emojiPicker{
+  display:none;
+  flex-wrap:wrap;
+  gap:5px;
+
+  padding:9px;
+
+  max-height:120px;
+  overflow-y:auto;
+
+  border-top:1px solid rgba(255,255,255,.08);
+  border-bottom:1px solid rgba(255,255,255,.08);
+
+  background:#0d211a;
+}
+
+.emojiItem{
+  border:0;
+  background:#17342a;
+  color:white;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:20px;
+  width:36px;
+  height:34px;
+}
+
+.emojiItem:hover{
+  background:#205040;
 }
 
 #messages{
@@ -552,6 +633,13 @@ header span{
     width:calc(100% - 14px);
     height:55vh;
   }
+
+  #classTimer{
+    left:8px;
+    top:8px;
+    font-size:11px;
+    padding:6px 8px;
+  }
 }
 
 /* VERY SMALL MOBILE */
@@ -599,7 +687,13 @@ header span{
   </div>
 
   <div id="videoArea">
+
+    <div id="classTimer">
+      ⏱️ 00:00
+    </div>
+
     <div id="videoGrid"></div>
+
   </div>
 
   <div id="controls">
@@ -631,6 +725,11 @@ header span{
       <span>Screen</span>
     </button>
 
+    <button class="controlBtn" id="screenAudioBtn" aria-label="Screen Audio">
+      🔊
+      <span>Screen Audio</span>
+    </button>
+
     <button class="controlBtn" id="chatBtn" aria-label="Chat">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.2 9.2 0 0 1-4-.9L3 21l1.8-4.5A8.4 8.4 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/>
@@ -655,7 +754,36 @@ header span{
   <div id="chatPanel">
 
     <div class="chatHeader">
-      Class Chat
+      <span>Class Chat</span>
+
+      <button id="emojiBtn" aria-label="Emoji">
+        😊
+      </button>
+    </div>
+
+    <div id="emojiPicker">
+
+      <button class="emojiItem">😀</button>
+      <button class="emojiItem">😂</button>
+      <button class="emojiItem">😊</button>
+      <button class="emojiItem">😍</button>
+      <button class="emojiItem">🥰</button>
+      <button class="emojiItem">😘</button>
+      <button class="emojiItem">👍</button>
+      <button class="emojiItem">👏</button>
+      <button class="emojiItem">❤️</button>
+      <button class="emojiItem">💚</button>
+      <button class="emojiItem">🙏</button>
+      <button class="emojiItem">🤲</button>
+      <button class="emojiItem">🕌</button>
+      <button class="emojiItem">📖</button>
+      <button class="emojiItem">✨</button>
+      <button class="emojiItem">🌙</button>
+      <button class="emojiItem">😢</button>
+      <button class="emojiItem">😮</button>
+      <button class="emojiItem">🔥</button>
+      <button class="emojiItem">❤️‍🩹</button>
+
     </div>
 
     <div id="messages"></div>
@@ -719,8 +847,12 @@ let screenStream = null;
 let cameraOn = true;
 let micOn = true;
 let screenOn = false;
+let screenAudioOn = true;
 
 let joined = false;
+
+let classStartTime = null;
+let classTimerInterval = null;
 
 const peers = {};
 const screenPeers = {};
@@ -735,7 +867,6 @@ let channel = null;
 
 /* =========================================================
    METERED TURN + STUN
-   ONLY ICE SERVER SECTION CHANGED
 ========================================================= */
 
 const ICE_SERVERS = [
@@ -790,6 +921,9 @@ const micBtn =
 const screenBtn =
   document.getElementById("screenBtn");
 
+const screenAudioBtn =
+  document.getElementById("screenAudioBtn");
+
 const chatBtn =
   document.getElementById("chatBtn");
 
@@ -798,6 +932,12 @@ const leaveBtn =
 
 const chatPanel =
   document.getElementById("chatPanel");
+
+const emojiBtn =
+  document.getElementById("emojiBtn");
+
+const emojiPicker =
+  document.getElementById("emojiPicker");
 
 const messages =
   document.getElementById("messages");
@@ -810,6 +950,9 @@ const sendChat =
 
 const toast =
   document.getElementById("toast");
+
+const classTimer =
+  document.getElementById("classTimer");
 
 
 /* =========================================================
@@ -879,6 +1022,10 @@ stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 `;
 
 
+/* =========================================================
+   UPDATE CONTROL BUTTONS
+========================================================= */
+
 function updateControlButtons(){
 
   cameraBtn.innerHTML =
@@ -924,6 +1071,31 @@ function updateControlButtons(){
     screenOn
   );
 
+
+  screenAudioBtn.style.display =
+    screenOn &&
+    screenStream &&
+    screenStream.getAudioTracks().length
+      ? "flex"
+      : "none";
+
+
+  screenAudioBtn.classList.toggle(
+    "active",
+    screenAudioOn
+  );
+
+  screenAudioBtn.classList.toggle(
+    "off",
+    !screenAudioOn
+  );
+
+
+  screenAudioBtn.innerHTML =
+    screenAudioOn
+      ? "🔊 <span>Screen Audio</span>"
+      : "🔇 <span>Screen Audio</span>";
+
 }
 
 
@@ -940,6 +1112,136 @@ function showToast(text){
   setTimeout(()=>{
     toast.classList.remove("show");
   },2200);
+}
+
+
+/* =========================================================
+   CLASS TIMER
+========================================================= */
+
+function formatClassTime(totalSeconds){
+
+  const hours =
+    Math.floor(totalSeconds / 3600);
+
+  const minutes =
+    Math.floor(
+      (totalSeconds % 3600) / 60
+    );
+
+  const seconds =
+    totalSeconds % 60;
+
+
+  if(hours > 0){
+
+    return (
+      String(hours).padStart(2,"0") +
+      ":" +
+      String(minutes).padStart(2,"0") +
+      ":" +
+      String(seconds).padStart(2,"0")
+    );
+
+  }
+
+
+  return (
+    String(minutes).padStart(2,"0") +
+    ":" +
+    String(seconds).padStart(2,"0")
+  );
+
+}
+
+
+function startClassTimer(){
+
+  if(classTimerInterval){
+
+    clearInterval(
+      classTimerInterval
+    );
+
+  }
+
+
+  classStartTime =
+    Date.now();
+
+
+  classTimer.style.display =
+    "block";
+
+
+  function update(){
+
+    if(!classStartTime)
+      return;
+
+
+    const seconds =
+      Math.floor(
+        (Date.now() - classStartTime) / 1000
+      );
+
+
+    classTimer.textContent =
+      "⏱️ " +
+      formatClassTime(seconds);
+
+  }
+
+
+  update();
+
+
+  classTimerInterval =
+    setInterval(
+      update,
+      1000
+    );
+
+}
+
+
+function stopClassTimer(){
+
+  if(classTimerInterval){
+
+    clearInterval(
+      classTimerInterval
+    );
+
+    classTimerInterval =
+      null;
+
+  }
+
+
+  if(classStartTime){
+
+    const totalSeconds =
+      Math.floor(
+        (Date.now() - classStartTime) / 1000
+      );
+
+
+    showToast(
+      "Class duration: " +
+      formatClassTime(totalSeconds)
+    );
+
+  }
+
+
+  classStartTime =
+    null;
+
+
+  classTimer.style.display =
+    "none";
+
 }
 
 
@@ -1346,6 +1648,12 @@ function createRemoteTile(
       playsinline
     ></video>
 
+    <audio
+      class="screenAudio"
+      autoplay
+      playsinline
+    ></audio>
+
   `;
 
   tile.appendChild(
@@ -1504,6 +1812,9 @@ async function(){
                 "none";
 
 
+              startClassTimer();
+
+
               await channel.track({
 
                 name:myName,
@@ -1649,7 +1960,6 @@ channel.on(
 
 /* =========================================================
    CREATE CAMERA + AUDIO PEER
-   CAMERA + AUDIO FIXED
 ========================================================= */
 
 async function createPeer(
@@ -1760,11 +2070,6 @@ async function createPeer(
         };
 
 
-      /*
-        CAMERA + AUDIO FIX:
-        Put BOTH incoming video and audio
-        tracks into one MediaStream.
-      */
       pc.ontrack =
         event=>{
 
@@ -1801,11 +2106,6 @@ async function createPeer(
             }
 
 
-            /*
-              IMPORTANT:
-              Remote video must NOT be muted,
-              otherwise microphone audio is also muted.
-            */
             if(
               video.srcObject !==
               peerData.remoteStream
@@ -1837,19 +2137,6 @@ async function createPeer(
 
             }
 
-
-            event.track.onended =
-              ()=>{
-
-                console.log(
-                  "Remote camera/audio track ended:",
-                  peerId,
-                  event.track.kind
-                );
-
-              };
-
-
           }catch(error){
 
             console.error(
@@ -1870,19 +2157,6 @@ async function createPeer(
             peerId,
             pc.connectionState
           );
-
-
-          if(
-            pc.connectionState ===
-            "failed"
-          ){
-
-            console.log(
-              "Camera/audio connection failed:",
-              peerId
-            );
-
-          }
 
         };
 
@@ -1982,11 +2256,6 @@ channel.on(
         pc.signalingState !==
         "stable"
       ){
-
-        console.log(
-          "Ignoring duplicate camera offer:",
-          peerId
-        );
 
         return;
 
@@ -2448,7 +2717,6 @@ async function(){
 
 /* =========================================================
    MIC BUTTON
-   FIXED
 ========================================================= */
 
 micBtn.onclick =
@@ -2479,18 +2747,11 @@ async function(){
   updateControlButtons();
 
 
-  /*
-    Play sound locally.
-  */
   playMicToggleSound(
     !micOn
   );
 
 
-  /*
-    Tell everyone else whether
-    microphone was muted/unmuted.
-  */
   await sendEvent(
     "mic-state",
     {
@@ -2501,9 +2762,6 @@ async function(){
   );
 
 
-  /*
-    Keep existing media state system.
-  */
   await sendEvent(
     "media-state",
     {
@@ -2560,6 +2818,12 @@ async function startScreenShare(){
 
   try{
 
+    /*
+      Audio is requested here.
+      The browser will decide which screen/tab/window
+      audio can actually be shared.
+    */
+
     screenStream =
       await navigator.mediaDevices.getDisplayMedia({
 
@@ -2570,13 +2834,29 @@ async function startScreenShare(){
           }
         },
 
-        audio:false
+        audio:true
 
       });
 
 
     const screenTrack =
       screenStream.getVideoTracks()[0];
+
+
+    const screenAudioTracks =
+      screenStream.getAudioTracks();
+
+
+    screenAudioOn =
+      screenAudioTracks.length > 0;
+
+
+    screenAudioTracks.forEach(
+      track=>{
+        track.enabled =
+          screenAudioOn;
+      }
+    );
 
 
     if(
@@ -2633,21 +2913,35 @@ async function startScreenShare(){
     }
 
 
-    screenTrack.onended =
-      async ()=>{
+    if(screenAudioOn){
 
-        if(screenOn){
+      showToast(
+        "Screen sharing + audio started"
+      );
 
-          await stopScreenShare();
+    }else{
 
-        }
+      showToast(
+        "Screen sharing started without audio"
+      );
 
-      };
+    }
 
 
-    showToast(
-      "Screen sharing started"
-    );
+    if(screenTrack){
+
+      screenTrack.onended =
+        async ()=>{
+
+          if(screenOn){
+
+            await stopScreenShare();
+
+          }
+
+        };
+
+    }
 
 
   }catch(error){
@@ -2659,6 +2953,7 @@ async function startScreenShare(){
 
     screenStream = null;
     screenOn = false;
+    screenAudioOn = false;
 
     updateControlButtons();
 
@@ -2708,56 +3003,69 @@ async function startScreenPeerFor(
     pc;
 
 
-  const screenTrack =
-    screenStream.getVideoTracks()[0];
+  const screenTracks =
+    screenStream.getTracks();
 
 
-  if(screenTrack){
+  screenTracks.forEach(
+    track=>{
 
-    const sender =
-      pc.addTrack(
-        screenTrack,
-        screenStream
-      );
+      try{
 
-
-    try{
-
-      const params =
-        sender.getParameters();
+        const sender =
+          pc.addTrack(
+            track,
+            screenStream
+          );
 
 
-      if(
-        !params.encodings ||
-        !params.encodings.length
-      ){
+        if(
+          track.kind ===
+          "video"
+        ){
 
-        params.encodings = [{}];
+          try{
+
+            const params =
+              sender.getParameters();
+
+
+            if(
+              !params.encodings ||
+              !params.encodings.length
+            ){
+
+              params.encodings = [{}];
+
+            }
+
+
+            params.encodings[0].maxFramerate =
+              30;
+
+            params.encodings[0].maxBitrate =
+              3000000;
+
+
+            sender.setParameters(
+              params
+            ).catch(()=>{});
+
+          }catch(e){}
+
+        }
+
+      }catch(error){
+
+        console.error(
+          "Add screen track error:",
+          error
+        );
 
       }
 
-
-      params.encodings[0].maxFramerate =
-        30;
-
-      params.encodings[0].maxBitrate =
-        3000000;
-
-
-      await sender.setParameters(
-        params
-      );
-
-    }catch(e){
-
-      console.log(
-        "Screen sender parameters:",
-        e
-      );
-
     }
-
-  }
+  );
 
 
   pc.onicecandidate =
@@ -2801,30 +3109,77 @@ async function startScreenPeerFor(
         );
 
 
-      const video =
-        tile.querySelector(
-          ".screenVideo"
+      if(
+        event.track.kind ===
+        "video"
+      ){
+
+        const video =
+          tile.querySelector(
+            ".screenVideo"
+          );
+
+
+        if(
+          event.streams &&
+          event.streams[0]
+        ){
+
+          video.srcObject =
+            event.streams[0];
+
+        }
+
+
+        tile.classList.add(
+          "screen-sharing"
         );
 
 
-      if(
-        event.streams &&
-        event.streams[0]
-      ){
-
-        video.srcObject =
-          event.streams[0];
+        video.play()
+          .catch(()=>{});
 
       }
 
 
-      tile.classList.add(
-        "screen-sharing"
-      );
+      if(
+        event.track.kind ===
+        "audio"
+      ){
+
+        const audio =
+          tile.querySelector(
+            ".screenAudio"
+          );
 
 
-      video.play()
-        .catch(()=>{});
+        if(
+          event.streams &&
+          event.streams[0]
+        ){
+
+          audio.srcObject =
+            event.streams[0];
+
+        }
+
+
+        audio.muted =
+          false;
+
+        audio.volume =
+          1;
+
+
+        audio.play()
+          .catch(error=>{
+            console.log(
+              "Screen audio waiting:",
+              error
+            );
+          });
+
+      }
 
 
       updateScreenLayout();
@@ -2957,30 +3312,77 @@ channel.on(
           );
 
 
-        const video =
-          tile.querySelector(
-            ".screenVideo"
+        if(
+          event.track.kind ===
+          "video"
+        ){
+
+          const video =
+            tile.querySelector(
+              ".screenVideo"
+            );
+
+
+          if(
+            event.streams &&
+            event.streams[0]
+          ){
+
+            video.srcObject =
+              event.streams[0];
+
+          }
+
+
+          tile.classList.add(
+            "screen-sharing"
           );
 
 
-        if(
-          event.streams &&
-          event.streams[0]
-        ){
-
-          video.srcObject =
-            event.streams[0];
+          video.play()
+            .catch(()=>{});
 
         }
 
 
-        tile.classList.add(
-          "screen-sharing"
-        );
+        if(
+          event.track.kind ===
+          "audio"
+        ){
+
+          const audio =
+            tile.querySelector(
+              ".screenAudio"
+            );
 
 
-        video.play()
-          .catch(()=>{});
+          if(
+            event.streams &&
+            event.streams[0]
+          ){
+
+            audio.srcObject =
+              event.streams[0];
+
+          }
+
+
+          audio.muted =
+            false;
+
+          audio.volume =
+            1;
+
+
+          audio.play()
+            .catch(error=>{
+              console.log(
+                "Remote screen audio waiting:",
+                error
+              );
+            });
+
+        }
 
 
         updateScreenLayout();
@@ -3181,6 +3583,115 @@ channel.on(
 
 
 /* =========================================================
+   SCREEN AUDIO TOGGLE
+========================================================= */
+
+screenAudioBtn.onclick =
+async function(){
+
+  if(
+    !screenOn ||
+    !screenStream
+  ){
+
+    return;
+
+  }
+
+
+  const audioTracks =
+    screenStream.getAudioTracks();
+
+
+  if(!audioTracks.length){
+
+    showToast(
+      "No screen audio is available"
+    );
+
+    return;
+
+  }
+
+
+  screenAudioOn =
+    !screenAudioOn;
+
+
+  audioTracks.forEach(
+    track=>{
+      track.enabled =
+        screenAudioOn;
+    }
+  );
+
+
+  updateControlButtons();
+
+
+  await sendEvent(
+    "screen-audio-state",
+    {
+      from:myId,
+      name:myName,
+      enabled:screenAudioOn
+    }
+  );
+
+
+  showToast(
+    screenAudioOn
+      ? "Screen audio ON"
+      : "Screen audio OFF"
+  );
+
+};
+
+
+/* =========================================================
+   REMOTE SCREEN AUDIO STATE
+========================================================= */
+
+channel.on(
+  "broadcast",
+  {
+    event:"screen-audio-state"
+  },
+  ({payload})=>{
+
+    if(
+      !payload ||
+      payload.from === myId
+    ) return;
+
+
+    const tile =
+      document.getElementById(
+        "tile-" + payload.from
+      );
+
+
+    if(!tile) return;
+
+
+    const audio =
+      tile.querySelector(
+        ".screenAudio"
+      );
+
+
+    if(audio){
+
+      audio.muted =
+        payload.enabled === false;
+
+    }
+
+  }
+);
+
+
+/* =========================================================
    STOP SCREEN SHARE
 ========================================================= */
 
@@ -3190,6 +3701,7 @@ async function stopScreenShare(){
 
 
   screenOn = false;
+  screenAudioOn = false;
 
 
   if(screenStream){
@@ -3295,6 +3807,20 @@ async function stopScreenShare(){
 
         }
 
+
+        const audio =
+          tile.querySelector(
+            ".screenAudio"
+          );
+
+
+        if(audio){
+
+          audio.srcObject =
+            null;
+
+        }
+
       }
 
     });
@@ -3379,6 +3905,20 @@ channel.on(
 
       }
 
+
+      const audio =
+        tile.querySelector(
+          ".screenAudio"
+        );
+
+
+      if(audio){
+
+        audio.srcObject =
+          null;
+
+      }
+
     }
 
 
@@ -3403,6 +3943,9 @@ function(){
     chatPanel.style.display =
       "none";
 
+    emojiPicker.style.display =
+      "none";
+
   }else{
 
     chatPanel.style.display =
@@ -3413,6 +3956,54 @@ function(){
   }
 
 };
+
+
+/* =========================================================
+   EMOJI BUTTON
+========================================================= */
+
+emojiBtn.onclick =
+function(){
+
+  if(
+    emojiPicker.style.display ===
+    "flex"
+  ){
+
+    emojiPicker.style.display =
+      "none";
+
+  }else{
+
+    emojiPicker.style.display =
+      "flex";
+
+  }
+
+};
+
+
+/* =========================================================
+   EMOJI SELECTION
+========================================================= */
+
+document
+  .querySelectorAll(".emojiItem")
+  .forEach(
+    button=>{
+
+      button.onclick =
+      function(){
+
+        chatInput.value +=
+          button.textContent;
+
+        chatInput.focus();
+
+      };
+
+    }
+  );
 
 
 /* =========================================================
@@ -3554,6 +4145,9 @@ function addMessage(
 
 leaveBtn.onclick =
 async function(){
+
+  stopClassTimer();
+
 
   if(
     screenOn
